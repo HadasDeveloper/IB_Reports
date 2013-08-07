@@ -154,6 +154,11 @@ namespace IB_Reports.Helper
         {
             return ExecuteSqlForData(string.Format(StoredProcedures.SqlGetGetDailyChanges)) ?? new DataTable();
         }
+
+        public DataTable GetDailyChangesData(List<Account> accounts)
+        {
+            return ExecuteSqlForData(string.Format(StoredProcedures.SqlGetDailyChangesData)) ?? new DataTable();
+        }
    
         // ----------------------  Core Functions ---------------------------------
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using IB_Reports.Helper;
+using Logger;
 
 namespace IB_Reports.Model
 {
@@ -62,7 +63,7 @@ namespace IB_Reports.Model
             dbHelper.CalcualteDailyChanges();
         }
 
-
+        //get all the last daily changes for specifics acounts
         internal void GetDailyChanges(List<Account> accounts)
         {
            DataTable table = dbHelper.GetDailyChanges();
@@ -72,18 +73,43 @@ namespace IB_Reports.Model
                {
                    if (table.Rows[i][0].Equals(accounts[j].AccountName))
                    {
-                       //DailyChange dChange = new DailyChange
-                       //                          {
-                       //                              Value = Convert.ToDouble(table.Rows[i][1]),
-                       //                              Date = Convert.ToDateTime(table.Rows[i][2]).Date
-                       //                          };
-
-                       //t.DailyChange.Add(dChange);
                        accounts[j].DailyChange = Convert.ToDouble(table.Rows[i][1]);
                        accounts[j].DailyChangeDate = Convert.ToDateTime(table.Rows[i][2]).Date;
                        break;
                    }
                }
+        }
+
+        //get all the daily changes for specifics acounts
+        public List<DailyChangeData> GetDailyChangesData(List<Account> accounts)
+        {
+            DataTable table = dbHelper.GetDailyChangesData(List < Account > accounts);
+            FileLogWriter logger = new FileLogWriter();
+
+            List<DailyChangeData> dailyChangeData = new List<DailyChangeData>();
+
+            foreach (DataRow row in table.Rows)
+            {
+                DailyChangeData data = new DailyChangeData();
+                try
+                {
+                    data.Date = DateTime.Parse(row["date"].ToString());
+                }
+                catch (Exception e  )
+                {
+                    logger.WriteToLog(DateTime.Now, string.Format("DataContext.GetDailyChangesData: {0}", e.Message), "IB_Log");
+                }
+                data.Value1 = row["Value1"].ToString();
+                data.Value2 = row["Value1"].ToString();
+                data.Value3 = row["Value1"].ToString();
+                data.Value4 = row["Value1"].ToString();
+                data.Value5 = row["Value1"].ToString();
+
+                dailyChangeData.Add(data);
+                
+            }
+
+            return dailyChangeData;
         }
     }
 }

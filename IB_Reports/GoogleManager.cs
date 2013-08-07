@@ -22,8 +22,8 @@ namespace IB_Reports
         }
         
         public static void WriteAccouuntsUpdate(List<Account> accounts) 
-        { 
-            GoogleSpreadSheetWriter.UpdateDailyProgress(accounts);
+        {
+            GoogleSpreadSheetWriter.WriteDailyChanges(accounts);
         }
         
     }

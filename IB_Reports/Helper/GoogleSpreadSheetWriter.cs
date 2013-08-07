@@ -76,13 +76,17 @@ namespace IB_Reports.Helper
         //}
 
 
-        public static void WriteDailyChanges(Account account)
+        public static void WriteDailyChanges(List<Account> accounts)
         {
+            DataContext dbmanager = new DataContext();
 
-            UpdateDailyProgress(account);
+            List<DailyChangeData> data = dbmanager.GetDailyChangesData();
+
+            UpdateDailyProgress(accounts);
+
         }
 
-        public static void UpdateDailyProgress(Account account)
+        public static void UpdateDailyProgress(List<Account> accounts)
         {
             FileLogWriter logger = new FileLogWriter();
 
@@ -100,24 +104,28 @@ namespace IB_Reports.Helper
                 return;
 
             //Loop through all the account names on google
-            if (account.Finished)
+            foreach (var account in accounts)
             {
-                //update last update date
-                CellEntry accountNameCell = helper.GetCell(account.AccountName, allCellsFeeds);
-                if (accountNameCell != null)
+                if (account.Finished)
                 {
-                    uint updateDateColumn = Convert.ToUInt16(ConfigurationManager.AppSettings["updateDateColumn"]);
-                    CellEntry updateCell = allCellsFeeds[accountNameCell.Row, updateDateColumn];
-                    updateCell.InputValue = DateTime.UtcNow.ToString();
-                    updateCell.Update();
+                    //update last update date
+                    CellEntry accountNameCell = helper.GetCell(account.AccountName, allCellsFeeds);
+                    if (accountNameCell != null)
+                    {
+                        uint updateDateColumn = Convert.ToUInt16(ConfigurationManager.AppSettings["updateDateColumn"]);
+                        CellEntry updateCell = allCellsFeeds[accountNameCell.Row, updateDateColumn];
+                        updateCell.InputValue = DateTime.UtcNow.ToString();
+                        updateCell.Update();
 
-                    logger.WriteToLog(DateTime.Now,account.AccountName +": GoogleSpreadSheetWriter.UpdateDailyProgress: update last change date","IB_Log");
-                }
-                else
-                {
-                    logger.WriteToLog(DateTime.Now, account.AccountName + ": GoogleSpreadSheetWriter.UpdateDailyProgress: not found this account name in \"xml report\" tab","IB_Log");
+                        logger.WriteToLog(DateTime.Now,account.AccountName +": GoogleSpreadSheetWriter.UpdateDailyProgress: update last change date","IB_Log");
+                    }
+                    else
+                    {
+                        logger.WriteToLog(DateTime.Now, account.AccountName + ": GoogleSpreadSheetWriter.UpdateDailyProgress: not found this account name in \"xml report\" tab","IB_Log");
+                    }
                 }
             }
+            
             
         }
 
