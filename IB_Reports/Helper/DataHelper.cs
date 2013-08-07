@@ -3,52 +3,56 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
+using IB_Reports.Model;
+using Logger;
 
-namespace IB_Reports.Model
+namespace IB_Reports.Helper
 {
     public class DataHelper
     {
-        string ConnectionFormat = ConfigurationManager.AppSettings["ConnectionFormat"];
+        readonly FileLogWriter logger = new FileLogWriter();
 
-        string DataSource = ConfigurationManager.AppSettings["DataSource"];
-        string Password = ConfigurationManager.AppSettings["Password"];
-        string UserId = ConfigurationManager.AppSettings["UserId"];
-        string DefaultDB = ConfigurationManager.AppSettings["DefaultDB"];
-        int connectionTimeout = Convert.ToInt16(ConfigurationManager.AppSettings["connectionTimeout"]);
-        bool TrastedConnection = Convert.ToBoolean(ConfigurationManager.AppSettings["TrastedConnection"]);
+        readonly string connectionFormat = ConfigurationManager.AppSettings["ConnectionFormat"];
 
-        private SqlConnection _connection;
-        private bool _isConnected;
+        readonly string dataSource = ConfigurationManager.AppSettings["DataSource"];
+//        string Password = ConfigurationManager.AppSettings["Password"];
+        readonly string userId = ConfigurationManager.AppSettings["UserId"];
+        readonly string defaultDB = ConfigurationManager.AppSettings["DefaultDB"];
+        readonly int connectionTimeout = Convert.ToInt16(ConfigurationManager.AppSettings["connectionTimeout"]);
+        readonly bool trastedConnection = Convert.ToBoolean(ConfigurationManager.AppSettings["TrastedConnection"]);
+
+        private SqlConnection connection;
+        private bool isConnected;
 
         public bool IsConnected
         {
-            get { return _isConnected; }
+            get { return isConnected; }
         }
 
         public void Connect(string initialCatalog)
         {
-            if (_isConnected) return;
-            if (_connection != null && _connection.State == ConnectionState.Connecting)
+            if (isConnected) return;
+            if (connection != null && connection.State == ConnectionState.Connecting)
             {
                 return;
             }
 
             lock (new object())
             {
-                _connection = new SqlConnection { ConnectionString = string.Format(ConnectionFormat, UserId, DataSource, TrastedConnection, initialCatalog, connectionTimeout) };
+                connection = new SqlConnection { ConnectionString = string.Format(connectionFormat, userId, dataSource, trastedConnection, initialCatalog, connectionTimeout) };
 
-                if (_connection.State != ConnectionState.Open)
+                if (connection.State != ConnectionState.Open)
                 {
                     try
                     {
-                        _connection.Open();
-                        _isConnected = true;
+                        connection.Open();
+                        isConnected = true;
                     }
                     catch (Exception e)
                     {
-                        Logger.WriteToLog("DataHelper.Connect(): " + e.Message);
-                        if (_connection.State != ConnectionState.Open)
-                            _isConnected = false;
+                        logger.WriteToLog(DateTime.Now, "DataHelper.Connect(): " + e.Message,"Log");
+                        if (connection.State != ConnectionState.Open)
+                            isConnected = false;
                     }
                 }
             }
@@ -56,32 +60,32 @@ namespace IB_Reports.Model
 
         public void Disconnect()
         {
-            if (_isConnected)
+            if (isConnected)
             {
                 try
                 {
-                    _connection.Close();
-                    _isConnected = false;
+                    connection.Close();
+                    isConnected = false;
                 }
                 catch (Exception e)
                 {
-                    if (_connection.State != ConnectionState.Open)
-                        _isConnected = false;
-                    Logger.WriteToLog("DataHelper.Disconnect(): " + e.Message);
+                    if (connection.State != ConnectionState.Open)
+                        isConnected = false;
+                    logger.WriteToLog(DateTime.Now, "DataHelper.Disconnect(): " + e.Message, "IB_Log");
                 }
                 finally
                 {
-                    _connection = null;
+                    connection = null;
                 }
             }
         }
 
         private SqlConnection GetConnection()
         {
-            if (_connection == null || _connection.State != ConnectionState.Open)
-                Connect(DefaultDB);
+            if (connection == null || connection.State != ConnectionState.Open)
+                Connect(defaultDB);
 
-            return _connection;
+            return connection;
         }
 
 
@@ -98,7 +102,7 @@ namespace IB_Reports.Model
             }
             catch (Exception e)
             {
-                Logger.WriteToLog("DataHelper.InsertDataTable(): " + e.Message);
+                logger.WriteToLog(DateTime.Now, "DataHelper.InsertDataTable(): " + e.Message,"IB_Log");
             }
         }
 
@@ -116,19 +120,19 @@ namespace IB_Reports.Model
         //    return ExecuteSqlForData(string.Format(StoredProcedures.SqlGetTodaysOeders)) ?? new DataTable();
         //}
 
-        public void InsertReportsData(string AccountName, string AccountId, DateTime date, double total, double totalLong, double totalShort)
+        public void InsertReportsData(string accountName, string accountId, DateTime date, double total, double totalLong, double totalShort)
         {
-            ExecuteSQL(string.Format(StoredProcedures.SqlInsertReportsData, AccountName, AccountId, date, total, totalLong, totalShort));
+            ExecuteSQL(string.Format(StoredProcedures.SqlInsertReportsData, accountName, accountId, date, total, totalLong, totalShort));
         }
 
-        public void InsertActivitiesData(string AccountName, string AccountId, DateTime date, string ActivityDescription, double Amount)
+        public void InsertActivitiesData(string accountName, string accountId, DateTime date, string activityDescription, double amount)
         {
-            ExecuteSQL(string.Format(StoredProcedures.SqlInsertActivityData, AccountName, AccountId, date, ActivityDescription, Amount));
+            ExecuteSQL(string.Format(StoredProcedures.SqlInsertActivityData, accountName, accountId, date, activityDescription, amount));
         }
 
-        public void InsertProcessResult(string AccountName, DateTime date, string success)
+        public void InsertProcessResult(string accountName, DateTime date, string success)
         {
-            ExecuteSQL(string.Format(StoredProcedures.SqlInsertProcessResult, AccountName, date, success));
+            ExecuteSQL(string.Format(StoredProcedures.SqlInsertProcessResult, accountName, date, success));
         }
 
         public DataTable GetProcessSuccessAccountsNames()
@@ -136,9 +140,9 @@ namespace IB_Reports.Model
             return ExecuteSqlForData(string.Format(StoredProcedures.SqlGetProcessSuccessAccountsNames, DateTime.Today)) ?? new DataTable();
         }
 
-        public void TrancateActivitysDataRows(string AccountName, DateTime date)
+        public void TrancateActivitysDataRows(string accountName, DateTime date)
         {
-            ExecuteSQL(string.Format(StoredProcedures.SqlTrancateActivitysDataRows, date, AccountName));
+            ExecuteSQL(string.Format(StoredProcedures.SqlTrancateActivitysDataRows, date, accountName));
         }
 
         public void CalcualteDailyChanges()
@@ -155,7 +159,7 @@ namespace IB_Reports.Model
 
         public bool ExecuteSQL(string sql)
         {
-            //Logger.WriteToLog("DataHelper.ExecuteSQL: " + sql);
+            //logger.WriteToLog(DateTime.Now, "DataHelper.ExecuteSQL: " + sql);
             return ExecuteSQL(sql, CommandType.Text, null);
         }
 
@@ -164,7 +168,7 @@ namespace IB_Reports.Model
             SqlCommand command;
 
             if (!IsConnected)
-                Connect(DefaultDB);
+                Connect(defaultDB);
 
             try
             {
@@ -182,7 +186,7 @@ namespace IB_Reports.Model
             }
             catch (Exception e)
             {
-                Logger.WriteToLog("DataHelper.ExecuteSQL() executing: " + e.Message);
+                logger.WriteToLog(DateTime.Now, "DataHelper.ExecuteSQL() executing: " + e.Message, "IB_Log");
                 return false;
             }
             return true;
@@ -190,45 +194,42 @@ namespace IB_Reports.Model
 
         public DataTable ExecuteSqlForData(string sql)
         {
-            Logger.WriteToLog("DataHelper.ExecuteSqlForData executing: " + sql);
+            logger.WriteToLog(DateTime.Now, "DataHelper.ExecuteSqlForData executing: " + sql, "IB_Log");
             
-            if (!IsConnected || _connection == null)
-                Connect(DefaultDB);
+            if (!IsConnected || connection == null)
+                Connect(defaultDB);
 
             System.Diagnostics.Debug.WriteLine(sql);
 
             DataTable result = null;
             SqlCommand command = null;
             SqlDataReader reader = null;
-            DataRow row;
             try
             {
-                command = new SqlCommand(sql, GetConnection()) { CommandType = CommandType.Text };
-                command.CommandTimeout = 0;
+                command = new SqlCommand(sql, GetConnection()) {CommandType = CommandType.Text, CommandTimeout = 0};
                 reader = command.ExecuteReader();
-                if (reader != null)
-                    while (reader.Read())
+                while (reader.Read())
+                {
+                    if (result == null)
                     {
-                        if (result == null)
-                        {
-                            result = CreateResultTable(reader);
-                        }
-                        row = result.NewRow();
-                        for (int i = 0; i < reader.FieldCount; i++)
-                        {
-                            if (reader.IsDBNull(i)
-                                && !(reader.GetFieldType(i) == typeof(string))
-                                && !(reader.GetFieldType(i) == typeof(DateTime)))
-                            {
-                                row[i] = 0;
-                            }
-                            else
-                            {
-                                row[i] = reader.GetValue(i);
-                            }
-                        }
-                        result.Rows.Add(row);
+                        result = CreateResultTable(reader);
                     }
+                    DataRow row = result.NewRow();
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        if (reader.IsDBNull(i)
+                            && !(reader.GetFieldType(i) == typeof(string))
+                            && !(reader.GetFieldType(i) == typeof(DateTime)))
+                        {
+                            row[i] = 0;
+                        }
+                        else
+                        {
+                            row[i] = reader.GetValue(i);
+                        }
+                    }
+                    result.Rows.Add(row);
+                }
 
                 System.Diagnostics.Debug.WriteLine(reader.FieldCount);
 
@@ -236,7 +237,7 @@ namespace IB_Reports.Model
             }
             catch (SqlException e)
             {
-                Logger.WriteToLog("DataHelper.ExecuteSqlForData(): " + e.Message);
+                logger.WriteToLog(DateTime.Now, "DataHelper.ExecuteSqlForData(): " + e.Message, "IB_Log");
                 return result;
             }
             finally
@@ -250,7 +251,7 @@ namespace IB_Reports.Model
             }
         }
 
-        private DataTable CreateResultTable(IDataRecord reader)
+        private static DataTable CreateResultTable(IDataRecord reader)
         {
             DataTable dataTable = new DataTable();
             for (int i = 0; i < reader.FieldCount; i++)

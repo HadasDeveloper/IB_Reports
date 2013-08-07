@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace IB_Reports.Model
 {
     public class StoredProcedures
@@ -19,6 +16,7 @@ namespace IB_Reports.Model
         public const string SqlCalculateDailyChanges = "exec ups_IB_Report_Calculate_Daily_Change";
 
         public static string SqlGetGetDailyChanges = "select ds.AccountName, ds.dailyChange, CONVERT(VARCHAR(8), ds.date, 3) from IB_Report_DailySummary ds join IB_Report_ProcessSummary ps on ds.AccountName = ps.AccountName where ps.Date >= CAST(GETDATE() As date) and ps.Success = 'True' and ds.Date = (select max(date) from IB_Report_DailySummary)";
+        //public static string SqlGetGetDailyChanges = "select ds.AccountName, ds.dailyChange, CONVERT(VARCHAR(8), ds.date, 3) from IB_Report_DailySummary ds join IB_Report_ProcessSummary ps on ds.AccountName = ps.AccountName where ps.Date >= CAST(GETDATE() As date) and ps.Success = 'True' order by ds.AccountName ,ds.date";
 
     }
 

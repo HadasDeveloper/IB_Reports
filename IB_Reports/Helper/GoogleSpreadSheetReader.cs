@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Configuration;
 using System.Collections.Generic;
-using IB_Reports;
-using Google.GData.Client;
+using System.Globalization;
 using Google.GData.Spreadsheets;
+using IB_Reports.Model;
+using Logger;
 
 
 namespace IB_Reports.Helper
 {
     public class GoogleSpreadsSheetReader
     {
-        private const uint titlesRow = 3;
+        private const uint TitlesRow = 3;
+      
 
         public static List<Account> ReadAcountsInfo()
-        {
+        {  
+            FileLogWriter logger = new FileLogWriter();
+
             SpreadsheetsService service = new SpreadsheetsService(ConfigurationManager.AppSettings["service"]);
             service.setUserCredentials(ConfigurationManager.AppSettings["accounts_username"], ConfigurationManager.AppSettings["accounts_password"]);
 
@@ -29,7 +33,7 @@ namespace IB_Reports.Helper
             Account account = new Account();
             foreach (CellEntry entry in allCellsFeeds.Entries)
             {
-                if (entry.Row <= titlesRow)
+                if (entry.Row <= TitlesRow)
                     continue;
 
                 if (!entry.Row.Equals(currentRow))
@@ -68,7 +72,18 @@ namespace IB_Reports.Helper
                         break;
                     case 14:
                         if (!entry.Value.Equals("0"))
-                            account.DailyChangeDate = Convert.ToDateTime(entry.Value);
+                            try
+                            {
+                                CultureInfo culture = new CultureInfo("en-US");
+                                account.LastUpdate = Convert.ToDateTime(entry.Value, culture);
+
+                            }
+                            catch (Exception e)
+                            {
+                                logger.WriteToLog(DateTime.Now, string.Format("ReadAcountsInfo: {0}" , e.Message), "IB_Log");
+
+                            }
+                            
                         break;
                     default:
                         break;

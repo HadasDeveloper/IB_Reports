@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Data;
+using IB_Reports.Helper;
 
 namespace IB_Reports.Model
 {
@@ -72,6 +72,13 @@ namespace IB_Reports.Model
                {
                    if (table.Rows[i][0].Equals(accounts[j].AccountName))
                    {
+                       //DailyChange dChange = new DailyChange
+                       //                          {
+                       //                              Value = Convert.ToDouble(table.Rows[i][1]),
+                       //                              Date = Convert.ToDateTime(table.Rows[i][2]).Date
+                       //                          };
+
+                       //t.DailyChange.Add(dChange);
                        accounts[j].DailyChange = Convert.ToDouble(table.Rows[i][1]);
                        accounts[j].DailyChangeDate = Convert.ToDateTime(table.Rows[i][2]).Date;
                        break;

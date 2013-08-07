@@ -1,32 +1,27 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using IB_Reports.Model;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Firefox;
 using System.Configuration;
 
-
-namespace IB_Reports
+namespace IB_Reports.Helper
 {
     public static class ReportDownloader
     {
-        public static IWebDriver Driver = new FirefoxDriver(GetFFProfile());
+        public static IWebDriver Driver = new FirefoxDriver(GetFfProfile());
         
         //private static readonly string path = ConfigurationManager.AppSettings["IBReportDownloadsPath"];
 
-        public static bool SaveReportToFile(Account account) 
+        public static bool SaveReportToFile(Account account)
         {
             //Clean up the folder where we store the report 
             if (!CleanUp(ConfigurationManager.AppSettings["IBReportDownloadsPath"]))
                 return false;
 
-            if (account.ProcessType.Equals("Automatic"))
-                return LogInManager.GetFileWithLogin(Driver, account);
-            else
-                return FlexFileManager.GetFlexFile(Driver, account);
-
+            return account.ProcessType.Equals("Automatic")
+                       ? LogInManager.GetFileWithLogin(Driver, account)
+                       : FlexFileManager.GetFlexFile(Driver, account);
         }
 
         private static bool CleanUp(string path)
@@ -38,7 +33,7 @@ namespace IB_Reports
                 {
                     file.Delete();
                 }
-                catch(Exception e)
+                catch(Exception)
                 {
                     return false;
                 }
@@ -49,7 +44,7 @@ namespace IB_Reports
             return true;
         }
 
-        private static FirefoxProfile GetFFProfile()
+        private static FirefoxProfile GetFfProfile()
         {
             FirefoxProfileManager profileManager = new FirefoxProfileManager();
             FirefoxProfile profile = profileManager.GetProfile("WebDriver");

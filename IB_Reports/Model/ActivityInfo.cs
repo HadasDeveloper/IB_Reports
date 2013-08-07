@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace IB_Reports.Model
+namespace IB_Reports.Helper
 {
     public class ActivityInfo
     {

@@ -1,29 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Net;
+using IB_Reports.Model;
+using Logger;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
-using IB_Reports.Helper;
 using System.Configuration;
 
 namespace IB_Reports
 {
     public static class FlexFileManager
-    {
+    {  
         public static bool GetFlexFile(IWebDriver driver, Account account)
         {
+            FileLogWriter logger = new FileLogWriter();
+
             //initial url, response will have the code
             driver.Navigate().GoToUrl(string.Format("{0}{1}&q={2}&v=2", ConfigurationManager.AppSettings["baseUrl"], account.Token, account.Queryid));
 
             //find reference code
             int startIndex = driver.PageSource.IndexOf("<code>");
             int endIndex = driver.PageSource.IndexOf("</code>");
-            string reference_code = driver.PageSource.Substring(startIndex + 6, endIndex - (startIndex + 6));
+            string referenceCode = driver.PageSource.Substring(startIndex + 6, endIndex - (startIndex + 6));
 
-            string pageUrl = string.Format("{0}{1}&t={2}&v=2", ConfigurationManager.AppSettings["baseUr2"], reference_code, account.Token);
+            string pageUrl = string.Format("{0}{1}&t={2}&v=2", ConfigurationManager.AppSettings["baseUr2"], referenceCode, account.Token);
             driver.Navigate().GoToUrl(pageUrl);
 
             WebClient webClient = new WebClient();
@@ -32,14 +31,14 @@ namespace IB_Reports
             //check for invalid request 
             if (text.IndexOf("Invalid request or unable to validate request") >= 0)
             {
-                Logger.WriteToLog(account.AccountName + ": FlexFileManager.GetFlexFile: Invalid request or unable to validate request");
+                logger.WriteToLog(DateTime.Now, account.AccountName + ": FlexFileManager.GetFlexFile: Invalid request or unable to validate request", "IB_Log");
                 return false;
             }
 
             
             if (!WaitForTextToNotExist("Statement generation in progress. Please try again shortly", driver))
             {
-                Logger.WriteToLog(account.AccountName + " : timedout - file not generated successfully");
+                logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - file not generated successfully", "IB_Log");
                 return false;
             }
 
@@ -47,13 +46,15 @@ namespace IB_Reports
             webClient.Encoding = System.Text.Encoding.UTF8;
             webClient.DownloadFile(pageUrl, ConfigurationManager.AppSettings["IBReportUploaderPath"]);
 
-            Logger.WriteToLog("file saved");
+            logger.WriteToLog(DateTime.Now, "file saved", "IB_Log");
 
             return true;
         }
 
         private static bool WaitForTextToNotExist(string massege, IWebDriver driver)
         {
+            FileLogWriter logger = new FileLogWriter();
+
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(60));
 
             try
@@ -66,7 +67,7 @@ namespace IB_Reports
                         string text = webClient.DownloadString(driver.Url);
 
                         if (text.LastIndexOf(massege) < 0) {
-                            Logger.WriteToLog("LogInManager: WaitForTextToNotExist: NoSuchElementException");
+                            logger.WriteToLog(DateTime.Now, " LogInManager: WaitForTextToNotExist: NoSuchElementException", "IB_Log");
                             return true;
                         }
 
@@ -74,14 +75,14 @@ namespace IB_Reports
                     }
                     catch (Exception e)
                     {
-                        Logger.WriteToLog("LogInManager: WaitForTextToNotExist: " + e.Message);
+                        logger.WriteToLog(DateTime.Now, " LogInManager: WaitForTextToNotExist: " + e.Message, "IB_Log");
                         return false;
                     }
                 });
             }
             catch (Exception e)
             {
-                Logger.WriteToLog("LogInManager: WaitForElementToNotExist: WebDriverTimeoutException");
+                logger.WriteToLog(DateTime.Now, " LogInManager: WaitForElementToNotExist: WebDriverTimeoutException " + e.Message, "IB_Log");
                 return false;
             }
 

@@ -49,6 +49,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files\Google\Google Data API SDK\Redist\Google.GData.Spreadsheets.dll</HintPath>
     </Reference>
+    <Reference Include="Logger">
+      <HintPath>..\..\Logger\Logger\Logger\bin\Debug\Logger.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Selenium.WebDriverBackedSelenium">
       <HintPath>lib\Selenium.WebDriverBackedSelenium.dll</HintPath>
@@ -81,11 +84,11 @@
     <Compile Include="Helper\GoogleSpreadSheethalper.cs" />
     <Compile Include="Helper\GoogleSpreadSheetReader.cs" />
     <Compile Include="Helper\GoogleSpreadSheetWriter.cs" />
-    <Compile Include="Helper\Logger.cs" />
     <Compile Include="Helper\ReportUploader.cs" />
     <Compile Include="LogInManager.cs" />
     <Compile Include="Model\Account.cs" />
     <Compile Include="Model\ActivityInfo.cs" />
+    <Compile Include="Model\DailyChange.cs" />
     <Compile Include="Model\DataContext.cs" />
     <Compile Include="Model\FileContex.cs" />
     <Compile Include="Helper\FileReader.cs" />

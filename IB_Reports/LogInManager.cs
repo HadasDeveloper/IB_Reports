@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using System.Collections.Generic;
-using System.Net;
 using System.Configuration;
+using System.Threading;
+using IB_Reports.Model;
+using Logger;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
-using IB_Reports;
 
 namespace IB_Reports
 {
@@ -14,26 +12,28 @@ namespace IB_Reports
     {
         public static bool GetFileWithLogin(IWebDriver driver, Account account)
         {
+            FileLogWriter logger = new FileLogWriter();
+
             driver.Navigate().GoToUrl(ConfigurationManager.AppSettings["IBUrl"]);
             driver.FindElement(By.Name("user_name")).SendKeys(account.Login);
             driver.FindElement(By.Name("password")).SendKeys(account.Password);
+            Thread.Sleep(100);
             driver.FindElement(By.Id("submitForm")).Click();
 
             //login into IB site
             if (!WaitForElementToNotExist("submitForm", driver))
             {
-                Logger.WriteToLog(account.AccountName + " : timedout - sbumitForm was not found for the first time");
+                logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - sbumitForm was not found for the first time", "IB_Log");
                 //try to login in the second time
                 driver.FindElement(By.Id("submitForm")).Click();
 
                 if (!WaitForElementToNotExist("submitForm", driver))
                 {
-                    Logger.WriteToLog(account.AccountName + " : timedout - sbumitForm was not found for the secound time");
+                    logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - sbumitForm was not found for the secound time", "IB_Log");    
                     return false;
                 }
             }
-            
-            Logger.WriteToLog(account.AccountName + " : logged in");
+            logger.WriteToLog(DateTime.Now, account.AccountName + " : logged in", "IB_Log");
 
             //navigate to repory file downlod page
             driver.Navigate().GoToUrl(account.Link);
@@ -42,36 +42,35 @@ namespace IB_Reports
             //check for error messages
             if (GetErrorMessage(driver))
             {
-                Logger.WriteToLog(account.AccountName + " : error massage in generating the file");
+                logger.WriteToLog(DateTime.Now, account.AccountName + " : error massage in generating the file", "IB_Log");
                 return false;
             }
            
             if (!WaitForElementTextToShowUp("msg", "generated successfully", driver)) 
             {
-                Logger.WriteToLog(account.AccountName + " : timedout - file not generated successfully");
+                logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - file not generated successfully", "IB_Log");
                 return false;
             }
-
-            Logger.WriteToLog(account.AccountName + "file generated successfully");
+            logger.WriteToLog(DateTime.Now, account.AccountName + "file generated successfully", "IB_Log");
             return true;
         }
 
         private static bool WaitForElementToNotExist(string ID, IWebDriver driver)
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+            FileLogWriter logger = new FileLogWriter();
             try
             {
                 wait.Until((d) =>
                 {
                     try
                     {
-                        IWebElement element = d.FindElement(By.Id(ID));
+                        d.FindElement(By.Id(ID));
                         return false;
-
                     }
                     catch (NoSuchElementException)
                     {
-                        Logger.WriteToLog("LogInManager: WaitForElementToNotExist: NoSuchElementException");
+                        logger.WriteToLog(DateTime.Now, "LogInManager: WaitForElementToNotExist: NoSuchElementException", "IB_Log");
                         return true;
                         
                     }
@@ -79,7 +78,7 @@ namespace IB_Reports
             }
             catch (WebDriverTimeoutException)
             {
-                Logger.WriteToLog("LogInManager: WaitForElementToNotExist: WebDriverTimeoutException");
+                logger.WriteToLog(DateTime.Now, "LogInManager: WaitForElementToNotExist: WebDriverTimeoutException", "IB_Log");
                 return false;
             }
             return true;
@@ -88,7 +87,7 @@ namespace IB_Reports
         private static bool WaitForElementTextToShowUp(string ID, string text, IWebDriver driver)
         { 
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(900));
-
+            FileLogWriter logger = new FileLogWriter();
             try
             {
                 wait.Until((d) =>
@@ -111,7 +110,7 @@ namespace IB_Reports
             }
             catch (Exception e)
             {
-                Logger.WriteToLog("LogInManager: WaitForElementTextToShowUp: " + e.Message);
+                logger.WriteToLog(DateTime.Now, "LogInManager: WaitForElementTextToShowUp: " + e.Message, "IB_Log");
                 return false;     
             }
 
@@ -120,8 +119,8 @@ namespace IB_Reports
 
         private static bool GetErrorMessage(IWebDriver driver)
         {
-            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(60));
-
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+            FileLogWriter logger = new FileLogWriter();
             try
             {
                 wait.Until((d) =>
@@ -131,7 +130,10 @@ namespace IB_Reports
                         IWebElement element2 = d.FindElement(By.ClassName("attention"));
 
                         if ((element2.Text.IndexOf(ConfigurationManager.AppSettings["message1"]) < 0)
-                            && element2.Text.IndexOf(ConfigurationManager.AppSettings["message2"]) < 0)
+                            && element2.Text.IndexOf(ConfigurationManager.AppSettings["message2"]) < 0
+                            && element2.Text.IndexOf(ConfigurationManager.AppSettings["message3"]) < 0
+                            
+                            )
                             return false;
                         else
                             return true;
@@ -144,7 +146,7 @@ namespace IB_Reports
             }
             catch (Exception e)
             {
-                Logger.WriteToLog("LogInManager: GetErrorMessage: " + e.Message);
+                logger.WriteToLog(DateTime.Now, "LogInManager: GetErrorMessage: " + e.Message, "IB_Log");
                 return false;
             }
             return true;

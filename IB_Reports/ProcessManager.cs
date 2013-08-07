@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using IB_Reports.Model;
-using IB_Reports;
+﻿using System.Collections.Generic;
 using IB_Reports.Helper;
+using IB_Reports.Model;
 
 namespace IB_Reports
 {
@@ -14,22 +10,23 @@ namespace IB_Reports
         //Start the process
         public static void Start()
         {
-            
-            DataContext dbmanager = new DataContext();
-
             //Get from google the list of account information that have not been updated for this day
             List<Account> accounts = GoogleManager.GetNotSuccessedAccounts();
 
-            foreach (var account in accounts)
+            //Account account = accounts[3];
+
+            //foreach (var account in accounts)
+
+            for (int i = 1; i <= 3; i++)
             {
                 //download and save report file 
-                if (ReportDownloader.SaveReportToFile(account)) // 2           
-                {   
+                if (ReportDownloader.SaveReportToFile(accounts[i])) // 2           
+                {
                     //upload report data to date base
-                    ReportUploader.UploadFileToDatabase(account); // 3           
+                    ReportUploader.UploadFileToDatabase(accounts[i]); // 3           
 
                     //update account status to finished
-                    account.Finished = true;
+                    accounts[i].Finished = true;
                 }
             }
 
@@ -40,8 +37,7 @@ namespace IB_Reports
 
             //Update last change date and save the daily change into google 
             GoogleManager.WriteAccouuntsUpdate(accounts);
-        //    
-        //    UpdateDailyChange();
+       
         }
 
         //
@@ -50,9 +46,7 @@ namespace IB_Reports
             DataContext dbmanager = new DataContext();
             dbmanager.CalcualteDailyChanges();
         } 
-        
-        //
-        private static void UpdateDailyChange() { } // 5
+ 
 
     }
 }

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Google.GData.Spreadsheets;
 using IB_Reports.Helper;
+using IB_Reports.Model;
 
 namespace IB_Reports
 {
@@ -16,7 +14,7 @@ namespace IB_Reports
 
             foreach (Account account in accounts)
             {
-                if (!account.DailyChangeDate.Date.Equals(DateTime.Today.Date))
+                if (!account.LastUpdate.Date.Equals(DateTime.Today.Date))
                     notSuccessedAccounts.Add(account);
             }
 
@@ -25,8 +23,7 @@ namespace IB_Reports
         
         public static void WriteAccouuntsUpdate(List<Account> accounts) 
         { 
-            //GoogleSpreadsSheetWriter.UpdateDailyProgress(progress_username, progress_pasword, accounts);
-            GoogleSpreadSheetWriter.UpdateDailyProgress("", "", accounts);
+            GoogleSpreadSheetWriter.UpdateDailyProgress(accounts);
         }
         
     }

@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Google.GData.Spreadsheets;
 using Google.GData.Client;
-using IB_Reports;
+using Logger;
 
 namespace IB_Reports.Helper
 {
     public class GoogleSpreadSheethalper
     {
+        readonly FileLogWriter logger = new FileLogWriter();
 
         //find specific cell by value
         public CellEntry GetCell(string value, CellFeed cells)
@@ -23,7 +21,7 @@ namespace IB_Reports.Helper
                 }
                 catch (Exception e)
                 {
-                   Logger.WriteToLog("GoogleSpreadSheethalper.GetCell: " + e.Message);
+                   logger.WriteToLog(DateTime.Now, "GoogleSpreadSheethalper.GetCell: " + e.Message,"IB_Log");
                    continue;
                 }
             }
@@ -45,9 +43,9 @@ namespace IB_Reports.Helper
 
             SpreadsheetEntry spreadsheetFile = null;
 
-            for (int i = 0; i < allSpreadsheet.Entries.Count; i++)
-                if (allSpreadsheet.Entries[i].Title.Text.Equals(fileName))
-                    spreadsheetFile = (SpreadsheetEntry)allSpreadsheet.Entries[i];
+            foreach (AtomEntry t in allSpreadsheet.Entries)
+                if (t.Title.Text.Equals(fileName))
+                    spreadsheetFile = (SpreadsheetEntry)t;
 
             if (spreadsheetFile == null)
             {
@@ -63,9 +61,9 @@ namespace IB_Reports.Helper
 
             WorksheetEntry tab = null; 
 
-            for (int i = 0; i < allTabs.Entries.Count; i++)
-                if (allTabs.Entries[i].Title.Text.Equals(tabName))
-                    tab = (WorksheetEntry)allTabs.Entries[i];
+            foreach (AtomEntry t in allTabs.Entries)
+                if (t.Title.Text.Equals(tabName))
+                    tab = (WorksheetEntry)t;
 
             if (tab == null)
             {

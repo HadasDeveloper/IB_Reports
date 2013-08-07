@@ -1,10 +1,5 @@
 ﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using Google.GData.Spreadsheets;
-using IB_Reports;
-using IB_Reports.Model;
-using IB_Reports.Helper;
+using Logger;
 
 namespace IB_Reports
 {
@@ -13,13 +8,16 @@ namespace IB_Reports
     {
 
         [STAThread]
-        static void Main(string[] args)
+        static void Main()
         {
-            Logger.WriteToLog("start process");
+            FileLogWriter logger = new FileLogWriter();
+
+            logger.WriteToLog(DateTime.Now, "   start process   ","IB_Log");
             
             ProcessManager.Start();
 
-            Logger.WriteToLog("Done");     
+            logger.WriteToLog(DateTime.Now, "Done", "IB_Log");
+ 
         }
 
     }
