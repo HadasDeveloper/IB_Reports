@@ -17,18 +17,18 @@ namespace IB_Reports
 
             //foreach (var account in accounts)
 
-            for (int i = 1; i <= 3; i++)
-            {
-                //download and save report file 
-                if (ReportDownloader.SaveReportToFile(accounts[i])) // 2           
-                {
-                    //upload report data to date base
-                    ReportUploader.UploadFileToDatabase(accounts[i]); // 3           
+            //for (int i = 1; i <= 3; i++)
+            //{
+            //    //download and save report file 
+            //    if (ReportDownloader.SaveReportToFile(accounts[i])) // 2           
+            //    {
+            //        //upload report data to date base
+            //        ReportUploader.UploadFileToDatabase(accounts[i]); // 3           
 
-                    //update account status to finished
-                    accounts[i].Finished = true;
-                }
-            }
+            //        //update account status to finished
+            //        accounts[i].Finished = true;
+            //    }
+            //}
 
             ReportDownloader.Driver.Quit();
 

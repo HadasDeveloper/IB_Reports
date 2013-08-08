@@ -83,33 +83,76 @@ namespace IB_Reports.Model
         //get all the daily changes for specifics acounts
         public List<DailyChangeData> GetDailyChangesData(List<Account> accounts)
         {
-            DataTable table = dbHelper.GetDailyChangesData(accounts);
             FileLogWriter logger = new FileLogWriter();
 
-            List<DailyChangeData> dailyChangeData = new List<DailyChangeData>();
+            string acountsNames = "";
+            foreach (Account account in accounts)
+            {
+                acountsNames = acountsNames +"\",\""+ account.AccountName;
+            }
+
+            DataTable table = dbHelper.GetDailyChangesData(acountsNames);
+
+            List<DailyChangeData> DailyChangeRows = new List<DailyChangeData>();
 
             foreach (DataRow row in table.Rows)
             {
-                //get the date
-                DailyChangeData data = new DailyChangeData();
+                DailyChangeData dailyChangeRow = new DailyChangeData();
+
                 try
                 {
-                    data.Date = DateTime.Parse(row["date"].ToString());
+                    dailyChangeRow.Date = DateTime.Parse(row["date"].ToString());
                 }
-                catch (Exception e  )
+                catch (Exception e)
                 {
                     logger.WriteToLog(DateTime.Now, string.Format("DataContext.GetDailyChangesData: {0}", e.Message), "IB_Log");
                 }
 
-                //get the values
-                for(int i=0 ; i< accounts.Count ; i++)
-                    data.Values.Add(row["account"+i].ToString());
+                dailyChangeRow.AccountName = row["AccountName"].ToString();
+                dailyChangeRow.Value = row["dailyChange"].ToString();
 
-                dailyChangeData.Add(data);
-                
+                DailyChangeRows.Add(dailyChangeRow);
             }
 
-            return dailyChangeData;
         }
+
+
+        //get all the daily changes for specifics acounts
+        //public List<DailyChangeData> GetDailyChangesData(List<Account> accounts)
+        //{
+        //    DataTable table = dbHelper.GetDailyChangesData(accounts);
+        //    FileLogWriter logger = new FileLogWriter();
+
+        //    List<DailyChangeData> dailyChangeData = new List<DailyChangeData>();
+
+        //    foreach (DataRow row in table.Rows)
+        //    {
+        //        //get the date
+        //        DailyChangeData data = new DailyChangeData();
+
+        //        try
+        //        {
+        //            data.Date = DateTime.Parse(row["date"].ToString());
+        //        }
+        //        catch (Exception e  )
+        //        {
+        //            logger.WriteToLog(DateTime.Now, string.Format("DataContext.GetDailyChangesData: {0}", e.Message), "IB_Log");
+        //        }
+
+        //        //get the values
+        //        data.Values = new List<string>();
+
+        //        for(int i=1 ; i<= accounts.Count ; i++)
+        //        {
+        //            string value = row["account" + i].ToString();
+        //            data.Values.Add(value);
+        //        }
+                    
+        //        dailyChangeData.Add(data);
+                
+        //    }
+
+        //    return dailyChangeData;
+        //}
     }
 }

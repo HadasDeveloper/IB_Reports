@@ -79,5 +79,57 @@ namespace IB_Reports.Helper
 
             return allCellsFeeds;
         }
+        //get List fedd in the specific tab
+        public ListFeed GetListFeeds(SpreadsheetsService service, string fileName, string tabName)
+        {
+            //retrieve available spreadsheets
+            SpreadsheetFeed allSpreadsheet = service.Query(new SpreadsheetQuery());
+
+            if (allSpreadsheet.Entries.Count == 0)
+            {
+                Console.WriteLine(" the drive is empty - 0 spreadsheets files");
+                return null;
+            }
+
+            SpreadsheetEntry spreadsheetFile = null;
+
+            foreach (AtomEntry t in allSpreadsheet.Entries)
+                if (t.Title.Text.Equals(fileName))
+                    spreadsheetFile = (SpreadsheetEntry)t;
+
+            if (spreadsheetFile == null)
+            {
+                Console.WriteLine(" requested file not found in the drive");
+                return null;
+            }
+
+            //retrieve all the sheets
+            AtomLink spreadSheetLink = spreadsheetFile.Links.FindService(GDataSpreadsheetsNameTable.WorksheetRel, null);
+
+            WorksheetQuery getAllTabs = new WorksheetQuery(spreadSheetLink.AbsoluteUri);
+            WorksheetFeed allTabs = service.Query(getAllTabs);
+
+            WorksheetEntry tab = null;
+
+            foreach (AtomEntry t in allTabs.Entries)
+                if (t.Title.Text.Equals(tabName))
+                    tab = (WorksheetEntry)t;
+
+            if (tab == null)
+            {
+                Console.WriteLine(" tab was not found in the file");
+                return null;
+            }
+
+            AtomLink listFeedLink = tab.Links.FindService(GDataSpreadsheetsNameTable.ListRel, null);
+
+
+            ListQuery listQuery = new ListQuery(listFeedLink.HRef.ToString());
+            ListFeed listFeed = service.Query(listQuery);
+
+            return listFeed;
+
+        }
+
     }
 }
