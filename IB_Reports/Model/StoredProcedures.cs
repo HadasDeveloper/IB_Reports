@@ -17,7 +17,7 @@ namespace IB_Reports.Model
 
         public static string SqlGetGetDailyChanges = "select ds.AccountName, ds.dailyChange, CONVERT(VARCHAR(8), ds.date, 3) from IB_Report_DailySummary ds join IB_Report_ProcessSummary ps on ds.AccountName = ps.AccountName where ps.Date >= CAST(GETDATE() As date) and ps.Success = 'True' and ds.Date = (select max(date) from IB_Report_DailySummary)";
 
-        public static string GetDailyChangesData = "";
+        public static string SqlGetDailyChangesData = "exec usp_IB_Report_Get_All_Daily_Changes '{0}', '{1}', '{2}', '{3}', '{4}'";
 
     }
 

@@ -88,7 +88,7 @@
     <Compile Include="LogInManager.cs" />
     <Compile Include="Model\Account.cs" />
     <Compile Include="Model\ActivityInfo.cs" />
-    <Compile Include="Model\DailyChange.cs" />
+    <Compile Include="Model\DailyChangeData.cs" />
     <Compile Include="Model\DataContext.cs" />
     <Compile Include="Model\FileContex.cs" />
     <Compile Include="Helper\FileReader.cs" />

@@ -157,7 +157,7 @@ namespace IB_Reports.Helper
 
         public DataTable GetDailyChangesData(List<Account> accounts)
         {
-            return ExecuteSqlForData(string.Format(StoredProcedures.SqlGetDailyChangesData)) ?? new DataTable();
+            return ExecuteSqlForData(string.Format(StoredProcedures.SqlGetDailyChangesData, accounts[0].AccountName,accounts[1].AccountName,accounts[2].AccountName,accounts[3].AccountName,accounts[4].AccountName)) ?? new DataTable();
         }
    
         // ----------------------  Core Functions ---------------------------------

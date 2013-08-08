@@ -83,13 +83,14 @@ namespace IB_Reports.Model
         //get all the daily changes for specifics acounts
         public List<DailyChangeData> GetDailyChangesData(List<Account> accounts)
         {
-            DataTable table = dbHelper.GetDailyChangesData(List < Account > accounts);
+            DataTable table = dbHelper.GetDailyChangesData(accounts);
             FileLogWriter logger = new FileLogWriter();
 
             List<DailyChangeData> dailyChangeData = new List<DailyChangeData>();
 
             foreach (DataRow row in table.Rows)
             {
+                //get the date
                 DailyChangeData data = new DailyChangeData();
                 try
                 {
@@ -99,11 +100,10 @@ namespace IB_Reports.Model
                 {
                     logger.WriteToLog(DateTime.Now, string.Format("DataContext.GetDailyChangesData: {0}", e.Message), "IB_Log");
                 }
-                data.Value1 = row["Value1"].ToString();
-                data.Value2 = row["Value1"].ToString();
-                data.Value3 = row["Value1"].ToString();
-                data.Value4 = row["Value1"].ToString();
-                data.Value5 = row["Value1"].ToString();
+
+                //get the values
+                for(int i=0 ; i< accounts.Count ; i++)
+                    data.Values.Add(row["account"+i].ToString());
 
                 dailyChangeData.Add(data);
                 
