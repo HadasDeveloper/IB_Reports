@@ -13,10 +13,7 @@ namespace IB_Reports.Helper
         public static void WriteDailyChanges(List<Account> accounts)
         {
             DataContext dbmanager = new DataContext();
-
-            List<DailyChangeData> data = dbmanager.GetDailyChangesData(accounts);
-
-
+         
             FileLogWriter logger = new FileLogWriter();
 
             //connect to google service
@@ -32,88 +29,68 @@ namespace IB_Reports.Helper
             if (allCellsFeeds == null)
                 return;
 
-            //Find the cell which is a starting point for writing the data
-//           CellEntry startingCell = helper.GetCell("accountname", allCellsFeeds);
-            CellEntry startingCell = allCellsFeeds[1, 1];
+            List<DailyChangeData> data = dbmanager.GetDailyChangesData(accounts);
 
-            if (startingCell == null)
-            {
-                logger.WriteToLog(DateTime.Now,
-                                  ": GoogleSpreadSheetWriter.WriteDailyChanges: cant find string cell: \"account name\" ",
-                                  "IB_Log");
-                return;
-            }
-
-            uint startRow = startingCell.Row + 1;
-            uint startColumn = startingCell.Column;
-
-            uint numberOfColumns = (uint)data[0].Values.Count + startColumn;
-
-            // Check the size of the google sheet, to allow for all the data we have
-            if (allCellsFeeds.RowCount.Count < data.Count ||
-                allCellsFeeds.ColCount.Count < numberOfColumns)
-                AddRowsToGoogleSheet(startingCell.Value);
-
-            foreach (DailyChangeData row in data)
-            {
-                    CellEntry updateCell = allCellsFeeds[startRow,startColumn]; //write the date
-                    
-                    if(updateCell!=null)
-                    {
-                        updateCell.InputValue = row.Date.ToShortDateString();
-                        updateCell.Update();
-
-                        for (int i = 2; i <= row.Values.Count ; i++ )
-                        {
-                            updateCell = allCellsFeeds[startRow, startColumn + (uint)i];//write the Value1
-                            updateCell.InputValue = row.Values[i];
-                            updateCell.Update();
-                        }
-
-                    }
-                    else
-                    {
-                        CellEntry newCell = new CellEntry(startRow, startColumn, Convert.ToString(row.Date.ToShortDateString()));               
-                        allCellsFeeds.Insert(newCell);
-
-                        for (int i = 2; i < row.Values.Count; i++)
-                        {   
-                            newCell = new CellEntry(startRow, startColumn + (uint)i, row.Values[i]);
-                            allCellsFeeds.Insert(newCell);
-                        }
-                    }
-
-                    startRow++;
-  
-            }
+            AddRowsToGoogleSheet(service, data, allCellsFeeds);
 
             UpdateDailyProgress(accounts);
 
         }
 
         //private static void AddRowsToGoogleSheet(int rows, int columns, object tabReferrence)
-        private static void AddRowsToGoogleSheet(string startingCell)
+        private static void AddRowsToGoogleSheet(SpreadsheetsService service, List<DailyChangeData> data, CellFeed allCellsFeeds)
         {
-            //connect to google service
-            SpreadsheetsService service = new SpreadsheetsService("MySpreadsheetIntegration-v1");
-            service.setUserCredentials(ConfigurationManager.AppSettings["accounts_username"],
-                                       ConfigurationManager.AppSettings["accounts_password"]);
 
             GoogleSpreadSheethalper helper = new GoogleSpreadSheethalper();
             ListFeed listFeed = helper.GetListFeeds(service, ConfigurationManager.AppSettings["fileName"],
-                                             ConfigurationManager.AppSettings["dailyChangeTab"]);
+                                            ConfigurationManager.AppSettings["dailyChangeTab"]);
+          
+            DateTime previousdate = data[0].Date;
+            const uint headRow = 1;
+            uint currentRow= 1;
+            uint currentColumn = 1;
 
-            ListEntry row = new ListEntry();
+            foreach (DailyChangeData rowValue in data)
+            {
+                CellEntry updateCell;
 
+                if (rowValue.Date != previousdate || currentRow == 1)
+                {
+                    previousdate = rowValue.Date;
+                    currentColumn = 1;
+                    currentRow++;
 
-            row.Elements.Add(new ListEntry.Custom() { LocalName = startingCell, Value = "a" });
-            //row.Elements.Add(new ListEntry.Custom() { LocalName = "davidbush", Value = "3" });
-            //row.Elements.Add(new ListEntry.Custom() { LocalName = "graemesmith", Value = "4" });
-            //row.Elements.Add(new ListEntry.Custom() { LocalName = "markangil", Value = "5" });
-            //row.Elements.Add(new ListEntry.Custom() { LocalName = "timfligg", Value = "" });
-            //row.Elements.Add(new ListEntry.Custom() { LocalName = "ab", Value = "" });
-             
-            service.Insert(listFeed, row);
+                    if (allCellsFeeds.RowCount.Count < currentRow)
+                    {
+                        //add new row
+                        ListEntry row = new ListEntry();
+                        row.Elements.Add(new ListEntry.Custom { LocalName = allCellsFeeds[headRow, currentColumn].Value.Replace(" ", "") , Value = rowValue.Date.ToShortDateString() });
+                        service.Insert(listFeed, row);
+                    }
+                    else
+                    {
+                        //update existing  row
+                        updateCell = allCellsFeeds[currentRow, currentColumn];
+                        updateCell.InputValue = rowValue.Date.ToShortDateString();
+                        updateCell.Update();
+                    }
+                }  
+              
+                currentColumn++;
+                updateCell = allCellsFeeds[currentRow, currentColumn];
+
+                if (updateCell != null)
+                {
+                    updateCell.InputValue = rowValue.Value;//confirm the account name before writting????
+                    updateCell.Update();
+                }
+                else
+                {
+                    CellEntry newCell = new CellEntry(currentRow, currentColumn, rowValue.Value);
+                    allCellsFeeds.Insert(newCell);
+                }             
+            }            
+            
         }
 
         public static void UpdateDailyProgress(List<Account> accounts)

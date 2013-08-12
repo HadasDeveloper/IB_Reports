@@ -85,15 +85,17 @@ namespace IB_Reports.Model
         {
             FileLogWriter logger = new FileLogWriter();
 
-            string acountsNames = "";
+            string acountsNames = null;
             foreach (Account account in accounts)
             {
-                acountsNames = acountsNames +"\",\""+ account.AccountName;
+                acountsNames = acountsNames + "'" + account.AccountName + "',";
             }
+
+            acountsNames = acountsNames.Remove(acountsNames.LastIndexOf(','));
 
             DataTable table = dbHelper.GetDailyChangesData(acountsNames);
 
-            List<DailyChangeData> DailyChangeRows = new List<DailyChangeData>();
+            List<DailyChangeData> dailyChangeRows = new List<DailyChangeData>();
 
             foreach (DataRow row in table.Rows)
             {
@@ -111,9 +113,10 @@ namespace IB_Reports.Model
                 dailyChangeRow.AccountName = row["AccountName"].ToString();
                 dailyChangeRow.Value = row["dailyChange"].ToString();
 
-                DailyChangeRows.Add(dailyChangeRow);
+                dailyChangeRows.Add(dailyChangeRow);
             }
 
+            return dailyChangeRows;
         }
 
 
