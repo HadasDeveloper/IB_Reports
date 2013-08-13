@@ -25,5 +25,9 @@ namespace IB_Reports
             GoogleSpreadSheetWriter.WriteDailyChanges(accounts);
         }
         
+        public static void UpdateDailyProgress(List<Account> accounts)
+        {
+            GoogleSpreadSheetWriter.WriteLastUpdateDate(accounts);
+        }
     }
 }

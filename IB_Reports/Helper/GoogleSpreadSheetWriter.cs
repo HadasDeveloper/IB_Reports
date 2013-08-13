@@ -29,11 +29,6 @@ namespace IB_Reports.Helper
             for (int i = startingIndex-1; i >= 0; i--)
                 listFeed.Entries[i].Delete();
 
-            //foreach (AtomEntry t in listFeed.Entries)
-            //    t.Delete();
-
-
-
             //Get all cells feeds from "Daily Change" tab
             CellFeed allCellsFeeds = helper.GetCellFeeds(service, ConfigurationManager.AppSettings["fileName"],
                                                          ConfigurationManager.AppSettings["dailyChangeTab"]);
@@ -46,11 +41,8 @@ namespace IB_Reports.Helper
 
             WriteRowsToGoogleSheet(service, data, allCellsFeeds, listFeed);
 
-            UpdateDailyProgress(accounts);
-
         }
 
-        //private static void AddRowsToGoogleSheet(int rows, int columns, object tabReferrence)
         private static void WriteRowsToGoogleSheet(SpreadsheetsService service, List<DailyChangeData> data, CellFeed allCellsFeeds, ListFeed listFeed)
         {
             DateTime previousdate = data[0].Date;
@@ -118,7 +110,7 @@ namespace IB_Reports.Helper
             
         }
 
-        public static void UpdateDailyProgress(List<Account> accounts)
+        public static void WriteLastUpdateDate(List<Account> accounts)
         {
             FileLogWriter logger = new FileLogWriter();
 

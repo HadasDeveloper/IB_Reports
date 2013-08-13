@@ -10,23 +10,38 @@ namespace IB_Reports
         //Start the process
         public static void Start()
         {
-            
-            List<Account> accounts = GoogleSpreadsSheetReader.ReadAcountsInfo();
-            //Get the list of account information that have not been updated for this day
-            List<Account> notSuccessedAccounts = GoogleManager.GetNotSuccessedAccounts(accounts);
+            int attemptCounter = 0;
 
-            foreach (var account in notSuccessedAccounts)
+            List<Account> accounts = new List<Account>();
+
+            //loop through the accounts up to five times to finish them all
+            while (attemptCounter < 5)    
             {
-                //download and save report file 
-                if (ReportDownloader.SaveReportToFile(account)) // 2           
-                {
-                    //upload report data to date base
-                    ReportUploader.UploadFileToDatabase(account); // 3           
+                //Get the list of account information that have not been updated for this day
 
-                    //update account status to finished
-                    account.Finished = true;
+               accounts = GoogleSpreadsSheetReader.ReadAcountsInfo();
+               List<Account> notSuccessedAccounts = GoogleManager.GetNotSuccessedAccounts(accounts);
+
+                if(notSuccessedAccounts.Count == 0) 
+                    break;
+
+                foreach (var account in notSuccessedAccounts)
+                {
+                    //download and save report file 
+                    if (ReportDownloader.SaveReportToFile(account)) // 2           
+                    {
+                        //upload report data to date base
+                        ReportUploader.UploadFileToDatabase(account); // 3           
+
+                        //update account status to finished
+                        account.Finished = true;
+                    }
                 }
-            }
+
+                //set the last update date of the successed accounts to the current date
+                GoogleManager.UpdateDailyProgress(notSuccessedAccounts);
+                attemptCounter++;
+            }    
 
             ReportDownloader.Driver.Quit();
 
