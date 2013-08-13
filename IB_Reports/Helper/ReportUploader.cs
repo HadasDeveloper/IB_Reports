@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using IB_Reports.Helper;
 using System.Configuration;
 using IB_Reports.Model;
 
@@ -10,13 +7,13 @@ namespace IB_Reports.Helper
 {
     public static class ReportUploader
     {
-        public static List<PerformanceReport> performenceData;
-        public static FileContex file = new FileContex();
+        public static List<PerformanceReport> PerformenceData;
+        public static FileContex File = new FileContex();
 
         public static void UploadFileToDatabase(Account account)
         {
             //Upload the report to the database
-            ReadDataAndSendToDataBase(account.AccountName);
+            ReadDataAndSendToDataBase(account.AccountName, account.AccountID);
             UpdateUploadFileToDatabaseStatus(account.AccountName);
         }
 
@@ -28,21 +25,20 @@ namespace IB_Reports.Helper
 
         }
 
-        private static void ReadDataAndSendToDataBase(string accountName)
+        private static void ReadDataAndSendToDataBase(string accountName, string accountId)
         {
             DataContext dbmanager = new DataContext();
 
-            performenceData = file.GetReportInfo(ConfigurationManager.AppSettings["IBReportUploaderPath"], accountName);
+            PerformenceData = File.GetReportInfo(string.Format(ConfigurationManager.AppSettings["IBReportUploaderPath"], accountId), accountName);
 
-            for (int j = 0; j < performenceData.Count; j++)
+            foreach (PerformanceReport t in PerformenceData)
             {
-                dbmanager.InsertReportsData(performenceData[j].ReportData);
+                dbmanager.InsertReportsData(t.ReportData);
 
-                if (performenceData[j].ActivityData.Count > 0)
-                    dbmanager.TrancateActivitysDataRows(performenceData[j].ActivityData);
+                if (t.ActivityData.Count > 0)
+                    dbmanager.TrancateActivitysDataRows(t.ActivityData);
 
-                dbmanager.InsertActivitiesData(performenceData[j].ActivityData);
-
+                dbmanager.InsertActivitiesData(t.ActivityData);
             }
         }
     }

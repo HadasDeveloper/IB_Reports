@@ -10,7 +10,6 @@ namespace IB_Reports.Helper
     public static class ReportDownloader
     {
         public static IWebDriver Driver = new FirefoxDriver(GetFfProfile());
-        
         //private static readonly string path = ConfigurationManager.AppSettings["IBReportDownloadsPath"];
 
         public static bool SaveReportToFile(Account account)
@@ -19,6 +18,7 @@ namespace IB_Reports.Helper
             if (!CleanUp(ConfigurationManager.AppSettings["IBReportDownloadsPath"]))
                 return false;
 
+            
             return account.ProcessType.Equals("Automatic")
                        ? LogInManager.GetFileWithLogin(Driver, account)
                        : FlexFileManager.GetFlexFile(Driver, account);

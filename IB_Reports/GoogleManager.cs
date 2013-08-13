@@ -7,9 +7,8 @@ namespace IB_Reports
 {
     public static class GoogleManager
     {
-        public static List<Account> GetNotSuccessedAccounts()
+        public static List<Account> GetNotSuccessedAccounts(List<Account> accounts)
         {
-            List<Account> accounts = GoogleSpreadsSheetReader.ReadAcountsInfo();
             List<Account> notSuccessedAccounts = new List<Account>();
 
             foreach (Account account in accounts)

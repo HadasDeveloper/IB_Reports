@@ -10,36 +10,33 @@ namespace IB_Reports
         //Start the process
         public static void Start()
         {
-            //Get from google the list of account information that have not been updated for this day
-            List<Account> accounts = GoogleManager.GetNotSuccessedAccounts();
+            
+            List<Account> accounts = GoogleSpreadsSheetReader.ReadAcountsInfo();
+            //Get the list of account information that have not been updated for this day
+            List<Account> notSuccessedAccounts = GoogleManager.GetNotSuccessedAccounts(accounts);
 
-            ////Account account = accounts[3];
+            foreach (var account in notSuccessedAccounts)
+            {
+                //download and save report file 
+                if (ReportDownloader.SaveReportToFile(account)) // 2           
+                {
+                    //upload report data to date base
+                    ReportUploader.UploadFileToDatabase(account); // 3           
 
-            //foreach (var account in accounts)
-            ////for (int i = 1; i <= 3; i++)
-            //{
-            //    //download and save report file 
-            //    if (ReportDownloader.SaveReportToFile(account)) // 2           
-            //    {
-            //        //upload report data to date base
-            //        ReportUploader.UploadFileToDatabase(account); // 3           
+                    //update account status to finished
+                    account.Finished = true;
+                }
+            }
 
-            //        //update account status to finished
-            //        account.Finished = true;
-            //    }
-            //}
+            ReportDownloader.Driver.Quit();
 
-            //ReportDownloader.Driver.Quit();
-
-            ////All inserts are done, calculate the daily changes
-            //CalculateDailyChanges();
+            //All inserts are done, calculate the daily changes
+            CalculateDailyChanges();
 
             //Update last change date and save the daily change into google 
-            GoogleManager.WriteAccouuntsUpdate(accounts);
-       
+            GoogleManager.WriteAccouuntsUpdate(accounts); 
         }
-
-        
+       
         private static void CalculateDailyChanges() // 4
         {
             DataContext dbmanager = new DataContext();

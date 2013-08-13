@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Configuration;
 using System.Collections.Generic;
-using System.Globalization;
 using Google.GData.Spreadsheets;
 using IB_Reports.Model;
 using Logger;
@@ -50,32 +49,35 @@ namespace IB_Reports.Helper
                         account.AccountName = entry.Value;
                         break;
                     case 4:
-                        account.Login = entry.Value;
+                        account.AccountID = entry.Value;
                         break;
                     case 5:
-                        account.Password = entry.Value;
+                        account.Login = entry.Value;
                         break;
                     case 6:
-                        account.Token = entry.Value;
+                        account.Password = entry.Value;
                         break;
                     case 7:
-                        account.Queryid = entry.Value;
+                        account.Token = entry.Value;
                         break;
                     case 8:
+                        account.Queryid = entry.Value;
+                        break;
+                    case 9:
                         account.Link = entry.Value;
                         break;
-                    case 12:
+                    case 13:
                         account.ProcessType = entry.Value;
                         break;
-                    case 13:
+                    case 14:
                         account.Active = entry.Value;
                         break;
-                    case 14:
+                    case 15:
                         if (!entry.Value.Equals("0"))
                             try
                             {
-                                CultureInfo culture = new CultureInfo("en-US");
-                                account.LastUpdate = Convert.ToDateTime(entry.Value, culture);
+                                //CultureInfo culture = new CultureInfo("en-US");
+                                account.LastUpdate = Convert.ToDateTime(entry.Value);//, culture);
 
                             }
                             catch (Exception e)

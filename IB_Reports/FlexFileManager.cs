@@ -44,7 +44,7 @@ namespace IB_Reports
 
             //save the data to file
             webClient.Encoding = System.Text.Encoding.UTF8;
-            webClient.DownloadFile(pageUrl, ConfigurationManager.AppSettings["IBReportUploaderPath"]);
+            webClient.DownloadFile(pageUrl, string.Format(ConfigurationManager.AppSettings["IBReportUploaderPath"], account.AccountID));
 
             logger.WriteToLog(DateTime.Now, "file saved", "IB_Log");
 

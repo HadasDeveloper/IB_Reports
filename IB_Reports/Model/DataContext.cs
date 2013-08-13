@@ -91,7 +91,8 @@ namespace IB_Reports.Model
                 acountsNames = acountsNames + "'" + account.AccountName + "',";
             }
 
-            acountsNames = acountsNames.Remove(acountsNames.LastIndexOf(','));
+            if (acountsNames != null) 
+                acountsNames = acountsNames.Remove(acountsNames.LastIndexOf(','));
 
             DataTable table = dbHelper.GetDailyChangesData(acountsNames);
 
@@ -118,44 +119,5 @@ namespace IB_Reports.Model
 
             return dailyChangeRows;
         }
-
-
-        //get all the daily changes for specifics acounts
-        //public List<DailyChangeData> GetDailyChangesData(List<Account> accounts)
-        //{
-        //    DataTable table = dbHelper.GetDailyChangesData(accounts);
-        //    FileLogWriter logger = new FileLogWriter();
-
-        //    List<DailyChangeData> dailyChangeData = new List<DailyChangeData>();
-
-        //    foreach (DataRow row in table.Rows)
-        //    {
-        //        //get the date
-        //        DailyChangeData data = new DailyChangeData();
-
-        //        try
-        //        {
-        //            data.Date = DateTime.Parse(row["date"].ToString());
-        //        }
-        //        catch (Exception e  )
-        //        {
-        //            logger.WriteToLog(DateTime.Now, string.Format("DataContext.GetDailyChangesData: {0}", e.Message), "IB_Log");
-        //        }
-
-        //        //get the values
-        //        data.Values = new List<string>();
-
-        //        for(int i=1 ; i<= accounts.Count ; i++)
-        //        {
-        //            string value = row["account" + i].ToString();
-        //            data.Values.Add(value);
-        //        }
-                    
-        //        dailyChangeData.Add(data);
-                
-        //    }
-
-        //    return dailyChangeData;
-        //}
     }
 }

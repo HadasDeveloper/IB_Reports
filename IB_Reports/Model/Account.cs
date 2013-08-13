@@ -5,6 +5,7 @@ namespace IB_Reports.Model
     public class Account
     {
         public string AccountName { get; set; }
+        public string AccountID { get; set; }
         public string Login { get; set; }
         public string Password { get; set; }
         public string Link { get; set; }

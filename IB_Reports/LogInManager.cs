@@ -55,7 +55,7 @@ namespace IB_Reports
             return true;
         }
 
-        private static bool WaitForElementToNotExist(string ID, IWebDriver driver)
+        private static bool WaitForElementToNotExist(string id, IWebDriver driver)
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
             FileLogWriter logger = new FileLogWriter();
@@ -65,7 +65,7 @@ namespace IB_Reports
                 {
                     try
                     {
-                        d.FindElement(By.Id(ID));
+                        d.FindElement(By.Id(id));
                         return false;
                     }
                     catch (NoSuchElementException)
@@ -84,7 +84,7 @@ namespace IB_Reports
             return true;
         }
 
-        private static bool WaitForElementTextToShowUp(string ID, string text, IWebDriver driver)
+        private static bool WaitForElementTextToShowUp(string id, string text, IWebDriver driver)
         { 
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(900));
             FileLogWriter logger = new FileLogWriter();
@@ -94,7 +94,7 @@ namespace IB_Reports
                 {
                     try
                     {
-                        IWebElement element = d.FindElement(By.Id(ID));
+                        IWebElement element = d.FindElement(By.Id(id));
 
                         if (element.Text.IndexOf(text) < 0)
                             return false;
