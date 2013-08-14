@@ -95,7 +95,7 @@ namespace IB_Reports.Helper
 
             foreach (AtomEntry t in allSpreadsheet.Entries)
                 if (t.Title.Text.Equals(fileName))
-                    spreadsheetFile = (SpreadsheetEntry)t;
+                    spreadsheetFile = (SpreadsheetEntry)t;    
 
             if (spreadsheetFile == null)
             {

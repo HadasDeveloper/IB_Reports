@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using IB_Reports.Model;
 
@@ -7,7 +6,8 @@ namespace IB_Reports.Helper
 {
     public static class ReportUploader
     {
-        public static List<PerformanceReport> PerformenceData;
+        //public static List<PerformanceReport> PerformenceData;
+        public static PerformanceReport PerformenceData;
         public static FileContex File = new FileContex();
 
         public static void UploadFileToDatabase(Account account)
@@ -31,15 +31,8 @@ namespace IB_Reports.Helper
 
             PerformenceData = File.GetReportInfo(string.Format(ConfigurationManager.AppSettings["IBReportUploaderPath"], accountId), accountName);
 
-            foreach (PerformanceReport t in PerformenceData)
-            {
-                dbmanager.InsertReportsData(t.ReportData);
+            dbmanager.InsertData(PerformenceData);
 
-                if (t.ActivityData.Count > 0)
-                    dbmanager.TrancateActivitysDataRows(t.ActivityData);
-
-                dbmanager.InsertActivitiesData(t.ActivityData);
-            }
         }
     }
 }

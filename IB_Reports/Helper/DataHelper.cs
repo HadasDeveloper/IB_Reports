@@ -106,34 +106,22 @@ namespace IB_Reports.Helper
             }
         }
 
-        //run stored procedures
-        // ----------------------  Example of running no return query ---------------------------------
-
-        //public void DeleteCompanyAddress(string companyId, string streetAddressId)
-        //{
-        //    ExecuteSQL(string.Format(StoredProcedures.SqlDeleteCompanyAddress, companyId, streetAddressId));
-        //}
-
-
-        //public DataTable GetRSIOrders()
-        //{
-        //    return ExecuteSqlForData(string.Format(StoredProcedures.SqlGetTodaysOeders)) ?? new DataTable();
-        //}
-
-        public void InsertReportsData(string accountName, string accountId, DateTime date, double total, double totalLong, double totalShort)
-        {
-            ExecuteSQL(string.Format(StoredProcedures.SqlInsertReportsData, accountName, accountId, date, total, totalLong, totalShort));
-        }
-
-        public void InsertActivitiesData(string accountName, string accountId, DateTime date, string activityDescription, double amount)
-        {
-            ExecuteSQL(string.Format(StoredProcedures.SqlInsertActivityData, accountName, accountId, date, activityDescription, amount));
-        }
+        //------------------------ User Functions ----------------------------------------
 
         public void InsertProcessResult(string accountName, DateTime date, string success)
         {
             ExecuteSQL(string.Format(StoredProcedures.SqlInsertProcessResult, accountName, date, success));
         }
+
+         public void InsertData(PerformanceReport data)
+         {
+             List<SqlParameter> parameters = new List<SqlParameter>();
+
+             parameters.Add(new SqlParameter("@ReportData", data.ReportDataTable));
+             parameters.Add(new SqlParameter("@ActivitesData", data.ActivityDataTable));
+
+             ExecuteSQL(string.Format(StoredProcedures.SqlInsertDate), System.Data.CommandType.StoredProcedure, parameters);
+         }
 
         public DataTable GetProcessSuccessAccountsNames()
         {
@@ -164,7 +152,6 @@ namespace IB_Reports.Helper
 
         public bool ExecuteSQL(string sql)
         {
-            //logger.WriteToLog(DateTime.Now, "DataHelper.ExecuteSQL: " + sql);
             return ExecuteSQL(sql, CommandType.Text, null);
         }
 

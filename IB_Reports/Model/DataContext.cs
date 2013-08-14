@@ -10,27 +10,15 @@ namespace IB_Reports.Model
     {
         readonly DataHelper dbHelper = new DataHelper();
 
-        public void InsertReportsData(List<ReportInfo> reports)
-        {
-            foreach (var report in reports)
-            {
-                dbHelper.InsertReportsData(report.AccountName, report.AccountId, report.Date, report.Total, report.TotalLong, report.TotalShort);
-            }
-        }
-
-        public void InsertActivitiesData(List<ActivityInfo> activities)
-        {
-            foreach (var activity in activities)
-            {
-                dbHelper.InsertActivitiesData(activity.AccountName, activity.AccountId, activity.Date, activity.ActivityDescription, activity.Amount);
-            }
-        }
-
-
         public void InsertProcessResult(string accountName, DateTime date, string success)
         {
             dbHelper.InsertProcessResult(accountName, date, success);
         }
+
+         public void InsertData(PerformanceReport data)
+         {
+             dbHelper.InsertData(data);
+         }
 
 
         public List<string> GetProcessSuccessAccountsNames()

@@ -1,23 +1,41 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Data;
 using Microsoft.VisualBasic.FileIO;
 
 namespace IB_Reports.Model
 {
     public class FileContex
     {
-        public List<PerformanceReport> GetReportInfo(string path, string accountName)
+        //public List<PerformanceReport> GetReportInfo(string path, string accountName)
+        public PerformanceReport GetReportInfo(string path, string accountName)
         {
-            TextFieldParser parser = new TextFieldParser(path);
-            parser.TextFieldType = FieldType.Delimited;
-            parser.HasFieldsEnclosedInQuotes = true;
+            TextFieldParser parser = new TextFieldParser(path)
+                                         {
+                                             TextFieldType = FieldType.Delimited,
+                                             HasFieldsEnclosedInQuotes = true
+                                         };
             parser.SetDelimiters(",");
 
-            List<ReportInfo> reports = new List<ReportInfo>();
-            List<ActivityInfo> activities = new List<ActivityInfo>();
+            DataTable reportsDataTable = new DataTable();
+            DataTable activityDataTable = new DataTable();
+
+
+            reportsDataTable.Columns.Add("accountName");
+            reportsDataTable.Columns.Add("AccountId");
+            reportsDataTable.Columns.Add("Date");
+            reportsDataTable.Columns.Add("Total");
+            reportsDataTable.Columns.Add("TotalLong");
+            reportsDataTable.Columns.Add("TotalShort");
+
+            activityDataTable.Columns.Add("accountName");
+            activityDataTable.Columns.Add("AccountId");
+            activityDataTable.Columns.Add("Date");
+            activityDataTable.Columns.Add("ActivityDescription");
+            activityDataTable.Columns.Add("Amount");
+
 
             int reportType = 0;
-            
+
             //loop while we still have more row
             while (!parser.EndOfData)
             {
@@ -25,24 +43,22 @@ namespace IB_Reports.Model
 
                 if (row != null)
                 {
+
                     if (row[1].Equals("Date") || row[1].Equals("ReportDate") || row[1].Equals("Report Date")) 
                     {
                         reportType++;
                         Console.WriteLine(accountName + " " + reportType);
+
+                        if(reportType == 3)
+                            reportType = 1;
+
                         continue;
                     }
              
                     if (reportType == 1)
                     {
-                        reports.Add(new ReportInfo
-                                        {
-                                            AccountName = accountName,
-                                            AccountId = (row[0]),
-                                            Date = Convert.ToDateTime(row[1]),
-                                            Total =  Convert.ToDouble(row[2]),
-                                            TotalLong = Convert.ToDouble(row[3]),
-                                            TotalShort = Convert.ToDouble(row[4]),
-                                        });
+                        reportsDataTable.Rows.Add(accountName, row[0], row[1],
+                                                   Convert.ToDouble(row[2]), Convert.ToDouble(row[3]), Convert.ToDouble(row[4]));
                     }
 
                     if (reportType == 2)
@@ -56,27 +72,20 @@ namespace IB_Reports.Model
                         if (row[0].Equals(""))
                             continue;
 
-                        activities.Add(new ActivityInfo
-                                           {
-                                               AccountName = accountName,
-                                               AccountId = (row[0]),
-                                               Date = Convert.ToDateTime(row[1]),
-                                               ActivityDescription = row[2],
-                                               Amount = Convert.ToDouble(row[3]),
-                                           });
+                        activityDataTable.Rows.Add(accountName, row[0], row[1], row[2],
+                                                  Convert.ToDouble(row[3]));
+                        
                     }
                 }
             }
 
             parser.Close();
 
-            List<PerformanceReport> performance = new List<PerformanceReport>();
-            performance.Add(new PerformanceReport
-                    {
-                        ReportData = reports,
-                        ActivityData = activities
-                    });
-            
+            PerformanceReport performance = new PerformanceReport
+                                                {
+                                                    ActivityDataTable = activityDataTable,
+                                                    ReportDataTable = reportsDataTable
+                                                };
             return performance;
 
         }

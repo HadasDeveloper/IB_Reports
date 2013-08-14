@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using IB_Reports.Helper;
+﻿using System.Data;
 
 namespace IB_Reports.Model
 {
     public class PerformanceReport
     {
-        public List<ReportInfo> ReportData { get; set; }
-        public List<ActivityInfo> ActivityData { get; set; }
+        public DataTable ReportDataTable { get; set; }
+        public DataTable ActivityDataTable { get; set; }
     }
 }
