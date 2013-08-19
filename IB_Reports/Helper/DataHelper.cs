@@ -115,12 +115,13 @@ namespace IB_Reports.Helper
 
          public void InsertData(PerformanceReport data)
          {
-             List<SqlParameter> parameters = new List<SqlParameter>();
+             List<SqlParameter> parameters = new List<SqlParameter>
+                                                 {
+                                                     new SqlParameter("@ReportData", data.ReportDataTable),
+                                                     new SqlParameter("@ActivitesData", data.ActivityDataTable)
+                                                 };
 
-             parameters.Add(new SqlParameter("@ReportData", data.ReportDataTable));
-             parameters.Add(new SqlParameter("@ActivitesData", data.ActivityDataTable));
-
-             ExecuteSQL(string.Format(StoredProcedures.SqlInsertDate), System.Data.CommandType.StoredProcedure, parameters);
+             ExecuteSQL(string.Format(StoredProcedures.SqlInsertDate), CommandType.StoredProcedure, parameters);
          }
 
         public DataTable GetProcessSuccessAccountsNames()

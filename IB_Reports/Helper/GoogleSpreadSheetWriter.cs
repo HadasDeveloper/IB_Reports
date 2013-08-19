@@ -31,8 +31,8 @@ namespace IB_Reports.Helper
 
             //Get all cells feeds from "Daily Change" tab
             CellFeed allCellsFeeds = helper.GetCellFeeds(service, ConfigurationManager.AppSettings["fileName"],
-                                                         ConfigurationManager.AppSettings["dailyChangeTab"]);
-
+                                                          ConfigurationManager.AppSettings["dailyChangeTab"]);
+                                                         //"a");
            
             if (allCellsFeeds == null)
                 return;
@@ -81,7 +81,9 @@ namespace IB_Reports.Helper
                     {
                         //add new row
                         ListEntry row = new ListEntry();
-                        row.Elements.Add(new ListEntry.Custom { LocalName = allCellsFeeds[headRow, currentColumn].Value.Replace(" ", "") , Value = rowValue.Date.ToShortDateString() });
+
+                        row.Elements.Add(new ListEntry.Custom { LocalName = allCellsFeeds[headRow, currentColumn].Value , Value = rowValue.Date.ToShortDateString() });
+                        //row.Elements.Add(new ListEntry.Custom { LocalName = "a" , Value = "b" });
                         service.Insert(listFeed, row);
                     }
                     else
@@ -129,10 +131,29 @@ namespace IB_Reports.Helper
                 return;
 
             CellEntry lastUpdateCell = helper.GetCell("last update", allCellsFeeds);
+            CellEntry errorCell = helper.GetCell("error", allCellsFeeds);
 
             //Loop through all the account names on google
             foreach (var account in accounts)
             {
+                if (account.Error)
+                {
+                    
+                    CellEntry accountNameCell = helper.GetCell(account.AccountName, allCellsFeeds);
+                    if (accountNameCell != null)
+                    {
+                        CellEntry updateCell = allCellsFeeds[accountNameCell.Row, errorCell.Column];
+                        updateCell.InputValue = "problem whith generating the report";
+                        updateCell.Update();
+
+                    }
+                    else
+                    {
+                        logger.WriteToLog(DateTime.Now, account.AccountName + ": GoogleSpreadSheetWriter.UpdateDailyProgress: not found this account name in \"xml report\" tab", "IB_Log");
+                    }
+                }
+
+
                 if (account.Finished)
                 {
                     //update last update date
@@ -150,9 +171,9 @@ namespace IB_Reports.Helper
                         logger.WriteToLog(DateTime.Now, account.AccountName + ": GoogleSpreadSheetWriter.UpdateDailyProgress: not found this account name in \"xml report\" tab","IB_Log");
                     }
                 }
+
             }
-            
-            
+                        
         }
 
     }

@@ -28,7 +28,7 @@ namespace IB_Reports
                 foreach (var account in notSuccessedAccounts)
                 {
                     //download and save report file 
-//                    if (ReportDownloader.SaveReportToFile(account)) // 2           
+                    if (ReportDownloader.SaveReportToFile(account)) // 2           
                     {
                         //upload report data to date base
                         ReportUploader.UploadFileToDatabase(account); // 3           

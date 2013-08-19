@@ -74,9 +74,10 @@ namespace IB_Reports.Model
             FileLogWriter logger = new FileLogWriter();
 
             string acountsNames = null;
+
             foreach (Account account in accounts)
             {
-                acountsNames = acountsNames + "'" + account.AccountName + "',";
+                acountsNames = acountsNames + "''" +  account.AccountName + "'',";
             }
 
             if (acountsNames != null) 

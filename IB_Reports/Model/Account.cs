@@ -13,9 +13,11 @@ namespace IB_Reports.Model
         public string Active { get; set; }
         public string Token { get; set; }
         public string Queryid { get; set; }
+        public bool Error { get; set; }
         public bool Finished  { get; set; }
         public DateTime DailyChangeDate { get; set; }
         public DateTime LastUpdate { get; set; }
         public double DailyChange { get; set; }
+
     }
 }

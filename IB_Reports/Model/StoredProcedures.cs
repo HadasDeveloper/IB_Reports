@@ -11,12 +11,12 @@ namespace IB_Reports.Model
 
         public const string SqlTrancateActivitysDataRows = "delete from IB_Report_ActivitesData where date >= '{0: yyyy/MM/dd hh:mm:ss}' and AccountName = '{1}'";
 
-        public const string SqlCalculateDailyChanges = "exec ups_IB_Report_Calculate_Daily_Change";
+        public const string SqlCalculateDailyChanges = "exec usp_IB_Report_Calculate_Daily_Change";
 
         public static string SqlGetGetDailyChanges = "select ds.AccountName, ds.dailyChange, CONVERT(VARCHAR(8), ds.date, 3) from IB_Report_DailySummary ds join IB_Report_ProcessSummary ps on ds.AccountName = ps.AccountName where ps.Date >= CAST(GETDATE() As date) and ps.Success = 'True' and ds.Date = (select max(date) from IB_Report_DailySummary)";
 
-        public static string SqlGetDailyChangesData = "select  q.date, q2.accountname, ds.dailyChange from (select distinct date from IB_Report_DailySummary) q  left join (select distinct accountname from IB_Report_DailySummary) q2 on 1 = 1 left join IB_Report_DailySummary ds on ds.date = q.date and ds.AccountName = q2.AccountName where q2.AccountName in ({0}) order by q.date, q2.accountname";
-
+        public static string SqlGetDailyChangesData = "usp_IB_Report_get_daily_changes '{0}'";
+       
     }
 
 }

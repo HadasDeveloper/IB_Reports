@@ -45,8 +45,15 @@ namespace IB_Reports
                 logger.WriteToLog(DateTime.Now, account.AccountName + " : error massage in generating the file", "IB_Log");
                 return false;
             }
-           
-            if (!WaitForElementTextToShowUp("msg", "generated successfully", driver)) 
+
+            if (WaitForElementTextToShowUp("msg", "There was a problem while generating report for the account", driver,30))
+            {
+                logger.WriteToLog(DateTime.Now, account.AccountName + " : There was a problem while generating report for the account", "IB_Log");
+                account.Error = true;
+                return false;
+            }
+
+            if (!WaitForElementTextToShowUp("msg", "generated successfully", driver,600)) 
             {
                 logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - file not generated successfully", "IB_Log");
                 return false;
@@ -84,9 +91,9 @@ namespace IB_Reports
             return true;
         }
 
-        private static bool WaitForElementTextToShowUp(string id, string text, IWebDriver driver)
-        { 
-            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(900));
+        private static bool WaitForElementTextToShowUp(string id, string text, IWebDriver driver, int secounds)
+        {
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(secounds));
             FileLogWriter logger = new FileLogWriter();
             try
             {
@@ -98,11 +105,11 @@ namespace IB_Reports
 
                         if (element.Text.IndexOf(text) < 0)
                             return false;
-                        else
-                            return true;
+                        
+                        return true;
 
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         return false;   
                     }
@@ -110,7 +117,7 @@ namespace IB_Reports
             }
             catch (Exception e)
             {
-                logger.WriteToLog(DateTime.Now, "LogInManager: WaitForElementTextToShowUp: " + e.Message, "IB_Log");
+                logger.WriteToLog(DateTime.Now, string.Format("LogInManager: WaitForElementTextToShowUp: Waiting for {0} - {1}" , text , e.Message), "IB_Log");
                 return false;     
             }
 
@@ -132,13 +139,15 @@ namespace IB_Reports
                         if ((element2.Text.IndexOf(ConfigurationManager.AppSettings["message1"]) < 0)
                             && element2.Text.IndexOf(ConfigurationManager.AppSettings["message2"]) < 0
                             && element2.Text.IndexOf(ConfigurationManager.AppSettings["message3"]) < 0
-                            
+                            && element2.Text.IndexOf(ConfigurationManager.AppSettings["message4"]) < 0 
                             )
-                            return false;
-                        else
-                            return true;
+                        {
+                            logger.WriteToLog(DateTime.Now, "LogInManager: GetErrorMessage: " + ConfigurationManager.AppSettings["message1"], "IB_Log");
+                            return false; 
+                        }     
+                        return true;
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         return false;
                     }
