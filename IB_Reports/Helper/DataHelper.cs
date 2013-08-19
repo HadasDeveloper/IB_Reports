@@ -50,7 +50,7 @@ namespace IB_Reports.Helper
                     }
                     catch (Exception e)
                     {
-                        logger.WriteToLog(DateTime.Now, "DataHelper.Connect(): " + e.Message,"Log");
+                        logger.WriteToLog(DateTime.Now, "DataHelper.Connect(): " + e.Message, ConfigurationManager.AppSettings["logFileName"]);
                         if (connection.State != ConnectionState.Open)
                             isConnected = false;
                     }
@@ -71,7 +71,7 @@ namespace IB_Reports.Helper
                 {
                     if (connection.State != ConnectionState.Open)
                         isConnected = false;
-                    logger.WriteToLog(DateTime.Now, "DataHelper.Disconnect(): " + e.Message, "IB_Log");
+                    logger.WriteToLog(DateTime.Now, "DataHelper.Disconnect(): " + e.Message, ConfigurationManager.AppSettings["logFileName"]);
                 }
                 finally
                 {
@@ -102,7 +102,7 @@ namespace IB_Reports.Helper
             }
             catch (Exception e)
             {
-                logger.WriteToLog(DateTime.Now, "DataHelper.InsertDataTable(): " + e.Message,"IB_Log");
+                logger.WriteToLog(DateTime.Now, "DataHelper.InsertDataTable(): " + e.Message,ConfigurationManager.AppSettings["logFileName"]);
             }
         }
 
@@ -148,6 +148,12 @@ namespace IB_Reports.Helper
         {
             return ExecuteSqlForData(string.Format(StoredProcedures.SqlGetDailyChangesData, accounts)) ?? new DataTable();
         }
+
+        public DataTable GetDailyPerformanceData(string accounts)
+        {
+            return ExecuteSqlForData(string.Format(StoredProcedures.SqlGetDailyPerformanceData, accounts)) ?? new DataTable();
+        }
+   
    
         // ----------------------  Core Functions ---------------------------------
 
@@ -179,7 +185,7 @@ namespace IB_Reports.Helper
             }
             catch (Exception e)
             {
-                logger.WriteToLog(DateTime.Now, "DataHelper.ExecuteSQL() executing: " + e.Message, "IB_Log");
+                logger.WriteToLog(DateTime.Now, "DataHelper.ExecuteSQL() executing: " + e.Message, ConfigurationManager.AppSettings["logFileName"]);
                 return false;
             }
             return true;
@@ -187,7 +193,7 @@ namespace IB_Reports.Helper
 
         public DataTable ExecuteSqlForData(string sql)
         {
-            logger.WriteToLog(DateTime.Now, "DataHelper.ExecuteSqlForData executing: " + sql, "IB_Log");
+            logger.WriteToLog(DateTime.Now, "DataHelper.ExecuteSqlForData executing: " + sql, ConfigurationManager.AppSettings["logFileName"]);
             
             if (!IsConnected || connection == null)
                 Connect(defaultDB);
@@ -230,7 +236,7 @@ namespace IB_Reports.Helper
             }
             catch (SqlException e)
             {
-                logger.WriteToLog(DateTime.Now, "DataHelper.ExecuteSqlForData(): " + e.Message, "IB_Log");
+                logger.WriteToLog(DateTime.Now, "DataHelper.ExecuteSqlForData(): " + e.Message, ConfigurationManager.AppSettings["logFileName"]);
                 return result;
             }
             finally

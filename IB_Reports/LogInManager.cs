@@ -23,17 +23,17 @@ namespace IB_Reports
             //login into IB site
             if (!WaitForElementToNotExist("submitForm", driver))
             {
-                logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - sbumitForm was not found for the first time", "IB_Log");
+                logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - sbumitForm was not found for the first time", ConfigurationManager.AppSettings["logFileName"]);
                 //try to login in the second time
                 driver.FindElement(By.Id("submitForm")).Click();
 
                 if (!WaitForElementToNotExist("submitForm", driver))
                 {
-                    logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - sbumitForm was not found for the secound time", "IB_Log");    
+                    logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - sbumitForm was not found for the secound time", ConfigurationManager.AppSettings["logFileName"]);    
                     return false;
                 }
             }
-            logger.WriteToLog(DateTime.Now, account.AccountName + " : logged in", "IB_Log");
+            logger.WriteToLog(DateTime.Now, account.AccountName + " : logged in", ConfigurationManager.AppSettings["logFileName"]);
 
             //navigate to repory file downlod page
             driver.Navigate().GoToUrl(account.Link);
@@ -42,23 +42,23 @@ namespace IB_Reports
             //check for error messages
             if (GetErrorMessage(driver))
             {
-                logger.WriteToLog(DateTime.Now, account.AccountName + " : error massage in generating the file", "IB_Log");
+                logger.WriteToLog(DateTime.Now, account.AccountName + " : error massage in generating the file", ConfigurationManager.AppSettings["logFileName"]);
                 return false;
             }
 
             if (WaitForElementTextToShowUp("msg", "There was a problem while generating report for the account", driver,30))
             {
-                logger.WriteToLog(DateTime.Now, account.AccountName + " : There was a problem while generating report for the account", "IB_Log");
+                logger.WriteToLog(DateTime.Now, account.AccountName + " : There was a problem while generating report for the account", ConfigurationManager.AppSettings["logFileName"]);
                 account.Error = true;
                 return false;
             }
 
             if (!WaitForElementTextToShowUp("msg", "generated successfully", driver,600)) 
             {
-                logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - file not generated successfully", "IB_Log");
+                logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - file not generated successfully", ConfigurationManager.AppSettings["logFileName"]);
                 return false;
             }
-            logger.WriteToLog(DateTime.Now, account.AccountName + "file generated successfully", "IB_Log");
+            logger.WriteToLog(DateTime.Now, account.AccountName + "file generated successfully", ConfigurationManager.AppSettings["logFileName"]);
             return true;
         }
 
@@ -77,7 +77,7 @@ namespace IB_Reports
                     }
                     catch (NoSuchElementException)
                     {
-                        logger.WriteToLog(DateTime.Now, "LogInManager: WaitForElementToNotExist: NoSuchElementException", "IB_Log");
+                        logger.WriteToLog(DateTime.Now, "LogInManager: WaitForElementToNotExist: NoSuchElementException", ConfigurationManager.AppSettings["logFileName"]);
                         return true;
                         
                     }
@@ -85,7 +85,7 @@ namespace IB_Reports
             }
             catch (WebDriverTimeoutException)
             {
-                logger.WriteToLog(DateTime.Now, "LogInManager: WaitForElementToNotExist: WebDriverTimeoutException", "IB_Log");
+                logger.WriteToLog(DateTime.Now, "LogInManager: WaitForElementToNotExist: WebDriverTimeoutException", ConfigurationManager.AppSettings["logFileName"]);
                 return false;
             }
             return true;
@@ -117,7 +117,7 @@ namespace IB_Reports
             }
             catch (Exception e)
             {
-                logger.WriteToLog(DateTime.Now, string.Format("LogInManager: WaitForElementTextToShowUp: Waiting for {0} - {1}" , text , e.Message), "IB_Log");
+                logger.WriteToLog(DateTime.Now, string.Format("LogInManager: WaitForElementTextToShowUp: Waiting for {0} - {1}" , text , e.Message), ConfigurationManager.AppSettings["logFileName"]);
                 return false;     
             }
 
@@ -142,7 +142,7 @@ namespace IB_Reports
                             && element2.Text.IndexOf(ConfigurationManager.AppSettings["message4"]) < 0 
                             )
                         {
-                            logger.WriteToLog(DateTime.Now, "LogInManager: GetErrorMessage: " + ConfigurationManager.AppSettings["message1"], "IB_Log");
+                            logger.WriteToLog(DateTime.Now, "LogInManager: GetErrorMessage: " + ConfigurationManager.AppSettings["message1"], ConfigurationManager.AppSettings["logFileName"]);
                             return false; 
                         }     
                         return true;
@@ -155,7 +155,7 @@ namespace IB_Reports
             }
             catch (Exception e)
             {
-                logger.WriteToLog(DateTime.Now, "LogInManager: GetErrorMessage: " + e.Message, "IB_Log");
+                logger.WriteToLog(DateTime.Now, "LogInManager: GetErrorMessage: " + e.Message, ConfigurationManager.AppSettings["logFileName"]);
                 return false;
             }
             return true;

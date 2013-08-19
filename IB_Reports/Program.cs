@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using Logger;
 
 namespace IB_Reports
@@ -12,11 +13,11 @@ namespace IB_Reports
         {
             FileLogWriter logger = new FileLogWriter();
 
-            logger.WriteToLog(DateTime.Now, "   start process   ","IB_Log");
+            logger.WriteToLog(DateTime.Now, "   start process   ",ConfigurationManager.AppSettings["logFileName"]);
             
             ProcessManager.Start();
 
-            logger.WriteToLog(DateTime.Now, "Done", "IB_Log");
+            logger.WriteToLog(DateTime.Now, "Done", ConfigurationManager.AppSettings["logFileName"]);
  
         }
 

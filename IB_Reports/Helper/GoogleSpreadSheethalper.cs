@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using Google.GData.Spreadsheets;
 using Google.GData.Client;
 using Logger;
@@ -21,7 +22,7 @@ namespace IB_Reports.Helper
                 }
                 catch (Exception e)
                 {
-                   logger.WriteToLog(DateTime.Now, "GoogleSpreadSheethalper.GetCell: " + e.Message,"IB_Log");
+                   logger.WriteToLog(DateTime.Now, "GoogleSpreadSheethalper.GetCell: " + e.Message,ConfigurationManager.AppSettings["logFileName"]);
                    continue;
                 }
             }

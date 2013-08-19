@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using IB_Reports.Helper;
-using Logger;
 
 namespace IB_Reports.Model
 {
@@ -69,44 +68,45 @@ namespace IB_Reports.Model
         }
 
         //get all the daily changes for specifics acounts
-        public List<DailyChangeData> GetDailyChangesData(List<Account> accounts)
+        public List<DbData> GetDailyData(List<Account> accounts, string dataSort)
         {
-            FileLogWriter logger = new FileLogWriter();
-
             string acountsNames = null;
 
             foreach (Account account in accounts)
-            {
-                acountsNames = acountsNames + "''" +  account.AccountName + "'',";
-            }
+                acountsNames = acountsNames + "''" + account.AccountName + "'',";
 
-            if (acountsNames != null) 
+            if (acountsNames != null)
                 acountsNames = acountsNames.Remove(acountsNames.LastIndexOf(','));
 
-            DataTable table = dbHelper.GetDailyChangesData(acountsNames);
+            DataTable table;
 
-            List<DailyChangeData> dailyChangeRows = new List<DailyChangeData>();
+            switch (dataSort)
+            {
+                case("Changes") :   table = dbHelper.GetDailyChangesData(acountsNames);
+                                break;
+                case("Performance") :  table = dbHelper.GetDailyPerformanceData(acountsNames);
+                                break;
+                default :
+                    return null;
+            }
+
+            List<DbData> dbData = new List<DbData>();
 
             foreach (DataRow row in table.Rows)
             {
-                DailyChangeData dailyChangeRow = new DailyChangeData();
+                DbData dbDatarow = new DbData
+                                            {
+                                                Column1 = row["column1"].ToString(),
+                                                Column2 = row["column2"].ToString(),
+                                                Column3 = row["column3"].ToString()
+                                            };
 
-                try
-                {
-                    dailyChangeRow.Date = DateTime.Parse(row["date"].ToString());
-                }
-                catch (Exception e)
-                {
-                    logger.WriteToLog(DateTime.Now, string.Format("DataContext.GetDailyChangesData: {0}", e.Message), "IB_Log");
-                }
-
-                dailyChangeRow.AccountName = row["AccountName"].ToString();
-                dailyChangeRow.Value = row["dailyChange"].ToString();
-
-                dailyChangeRows.Add(dailyChangeRow);
+                dbData.Add(dbDatarow);
             }
 
-            return dailyChangeRows;
+            return dbData;
         }
+
+     
     }
 }

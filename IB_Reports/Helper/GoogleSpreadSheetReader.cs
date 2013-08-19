@@ -82,7 +82,7 @@ namespace IB_Reports.Helper
                             }
                             catch (Exception e)
                             {
-                                logger.WriteToLog(DateTime.Now, string.Format("ReadAcountsInfo: {0}" , e.Message), "IB_Log");
+                                logger.WriteToLog(DateTime.Now, string.Format("ReadAcountsInfo: {0}" , e.Message), ConfigurationManager.AppSettings["logFileName"]);
 
                             }
                             

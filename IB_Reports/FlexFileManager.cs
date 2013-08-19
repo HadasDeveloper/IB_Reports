@@ -31,14 +31,14 @@ namespace IB_Reports
             //check for invalid request 
             if (text.IndexOf("Invalid request or unable to validate request") >= 0)
             {
-                logger.WriteToLog(DateTime.Now, account.AccountName + ": FlexFileManager.GetFlexFile: Invalid request or unable to validate request", "IB_Log");
+                logger.WriteToLog(DateTime.Now, account.AccountName + ": FlexFileManager.GetFlexFile: Invalid request or unable to validate request", ConfigurationManager.AppSettings["logFileName"]);
                 return false;
             }
 
             
             if (!WaitForTextToNotExist("Statement generation in progress. Please try again shortly", driver))
             {
-                logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - file not generated successfully", "IB_Log");
+                logger.WriteToLog(DateTime.Now, account.AccountName + " : timedout - file not generated successfully", ConfigurationManager.AppSettings["logFileName"]);
                 return false;
             }
 
@@ -46,7 +46,7 @@ namespace IB_Reports
             webClient.Encoding = System.Text.Encoding.UTF8;
             webClient.DownloadFile(pageUrl, string.Format(ConfigurationManager.AppSettings["IBReportUploaderPath"], account.AccountID));
 
-            logger.WriteToLog(DateTime.Now, "file saved", "IB_Log");
+            logger.WriteToLog(DateTime.Now, "file saved", ConfigurationManager.AppSettings["logFileName"]);
 
             return true;
         }
@@ -67,7 +67,7 @@ namespace IB_Reports
                         string text = webClient.DownloadString(driver.Url);
 
                         if (text.LastIndexOf(massege) < 0) {
-                            logger.WriteToLog(DateTime.Now, " LogInManager: WaitForTextToNotExist: NoSuchElementException", "IB_Log");
+                            logger.WriteToLog(DateTime.Now, " LogInManager: WaitForTextToNotExist: NoSuchElementException", ConfigurationManager.AppSettings["logFileName"]);
                             return true;
                         }
 
@@ -75,14 +75,14 @@ namespace IB_Reports
                     }
                     catch (Exception e)
                     {
-                        logger.WriteToLog(DateTime.Now, " LogInManager: WaitForTextToNotExist: " + e.Message, "IB_Log");
+                        logger.WriteToLog(DateTime.Now, " LogInManager: WaitForTextToNotExist: " + e.Message, ConfigurationManager.AppSettings["logFileName"]);
                         return false;
                     }
                 });
             }
             catch (Exception e)
             {
-                logger.WriteToLog(DateTime.Now, " LogInManager: WaitForElementToNotExist: WebDriverTimeoutException " + e.Message, "IB_Log");
+                logger.WriteToLog(DateTime.Now, " LogInManager: WaitForElementToNotExist: WebDriverTimeoutException " + e.Message, ConfigurationManager.AppSettings["logFileName"]);
                 return false;
             }
 

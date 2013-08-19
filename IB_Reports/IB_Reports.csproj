@@ -90,6 +90,7 @@
     <Compile Include="Model\ActivityInfo.cs" />
     <Compile Include="Model\DailyChangeData.cs" />
     <Compile Include="Model\DataContext.cs" />
+    <Compile Include="Model\DbData.cs" />
     <Compile Include="Model\FileContex.cs" />
     <Compile Include="Helper\FileReader.cs" />
     <Compile Include="Model\PerformanceReport.cs" />

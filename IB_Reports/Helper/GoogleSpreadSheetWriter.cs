@@ -13,99 +13,125 @@ namespace IB_Reports.Helper
         public static void WriteDailyChanges(List<Account> accounts)
         {
             DataContext dbmanager = new DataContext();
-        
+
+            string fileName =  ConfigurationManager.AppSettings["fileName"];
+            string tabName;
+            int startingRow;
+
             //connect to google service
             SpreadsheetsService service = new SpreadsheetsService("MySpreadsheetIntegration-v1");
             service.setUserCredentials(ConfigurationManager.AppSettings["accounts_username"],
                                        ConfigurationManager.AppSettings["accounts_password"]);
 
-            GoogleSpreadSheethalper helper = new GoogleSpreadSheethalper();
 
-            ListFeed listFeed = helper.GetListFeeds(service, ConfigurationManager.AppSettings["fileName"],
-                                            ConfigurationManager.AppSettings["dailyChangeTab"]);
+            List<DbData> dailyChangeData = dbmanager.GetDailyData(accounts, "Changes");
+            tabName = ConfigurationManager.AppSettings["dailyChangeTab"];
+            startingRow = 0;
+            WriteRowsToGoogleSheet(dailyChangeData, service, fileName, tabName, startingRow);
 
-            int startingIndex = listFeed.Entries.Count > 500 ? listFeed.Entries.Count - 500 : listFeed.Entries.Count;
 
-            for (int i = startingIndex-1; i >= 0; i--)
-                listFeed.Entries[i].Delete();
+            List<DbData> performence = dbmanager.GetDailyData(accounts, "Performance");
+            tabName = ConfigurationManager.AppSettings["performanceTab"];
+            startingRow = 1;
+            WriteRowsToGoogleSheet(performence, service, fileName, tabName, startingRow);
 
-            //Get all cells feeds from "Daily Change" tab
-            CellFeed allCellsFeeds = helper.GetCellFeeds(service, ConfigurationManager.AppSettings["fileName"],
-                                                          ConfigurationManager.AppSettings["dailyChangeTab"]);
-                                                         //"a");
-           
-            if (allCellsFeeds == null)
-                return;
-
-            List<DailyChangeData> data = dbmanager.GetDailyChangesData(accounts);
-
-            WriteRowsToGoogleSheet(service, data, allCellsFeeds, listFeed);
 
         }
 
-        private static void WriteRowsToGoogleSheet(SpreadsheetsService service, List<DailyChangeData> data, CellFeed allCellsFeeds, ListFeed listFeed)
+        private static void WriteRowsToGoogleSheet(List<DbData> data, SpreadsheetsService service, string fileName, string tabName, int startingRow)
         {
-            DateTime previousdate = data[0].Date;
+            GoogleSpreadSheethalper helper = new GoogleSpreadSheethalper();
+            FileLogWriter logger = new FileLogWriter();
+
+            ListFeed listFeed = helper.GetListFeeds(service , fileName , tabName);
+            CellFeed allCellsFeeds = helper.GetCellFeeds(service , fileName , tabName);                                         
+
+            if (allCellsFeeds == null || listFeed == null)
+                return;
+
+            int startingIndex = listFeed.Entries.Count > 500 ? listFeed.Entries.Count - 500 : listFeed.Entries.Count;
+
+            try
+            {
+                for (int i = startingIndex - 1 ; i >= startingRow; i--)
+                    listFeed.Entries[i].Delete();
+            }
+            catch (Exception e)
+            {
+                logger.WriteToLog(DateTime.Now, "WriteDailyChanges.WriteRowsToGoogleSheet(): cant delete thith row google server rturnd an error: " + e.Message, ConfigurationManager.AppSettings["logFileName"]);
+            }
+            
+
+            string previousdate = data[0].Column1;  //column1 = date or acountName , column2 = accountName or column
             const uint headRow = 1;
             uint currentRow= 1;
             uint currentColumn = 2;
 
             //update accounts names in the header row
-            foreach (DailyChangeData rowValue in data)
+            foreach (DbData rowValue in data)
             {
                 CellEntry updateCell;
 
-                if (rowValue.Date == previousdate)
+                if (rowValue.Column1 == previousdate)
                 {
                     updateCell = allCellsFeeds[currentRow, currentColumn];
-                    updateCell.InputValue = rowValue.AccountName;
+                    updateCell.InputValue = rowValue.Column2;
                     updateCell.Update();
                     currentColumn++;
+
+                    if (allCellsFeeds.ColCount.Count < currentColumn)
+                    {
+                        //add column
+                    }
                 }
             }
 
-            previousdate = data[0].Date;
+            previousdate = data[0].Column1;
 
             //insert data rows
-            foreach (DailyChangeData rowValue in data)
+            foreach (DbData rowValue in data)
             {
                 CellEntry updateCell;
 
-                if (rowValue.Date != previousdate || currentRow == 1)
+                if (rowValue.Column1 != previousdate || currentRow == 1)
                 {
-                    previousdate = rowValue.Date;
+                    previousdate = rowValue.Column1;
                     currentColumn = 1;
                     currentRow++;
+
+                    
 
                     if (allCellsFeeds.RowCount.Count < currentRow)
                     {
                         //add new row
                         ListEntry row = new ListEntry();
 
-                        row.Elements.Add(new ListEntry.Custom { LocalName = allCellsFeeds[headRow, currentColumn].Value , Value = rowValue.Date.ToShortDateString() });
-                        //row.Elements.Add(new ListEntry.Custom { LocalName = "a" , Value = "b" });
+                        row.Elements.Add(new ListEntry.Custom { LocalName = allCellsFeeds[headRow, currentColumn].Value, Value = rowValue.Column1 });
                         service.Insert(listFeed, row);
                     }
                     else
                     {
                         //update existing  row
                         updateCell = allCellsFeeds[currentRow, currentColumn];
-                        updateCell.InputValue = rowValue.Date.ToShortDateString();
+                        updateCell.InputValue = rowValue.Column3;
                         updateCell.Update();
                     }
+                    
+
                 }  
               
                 currentColumn++;
+
                 updateCell = allCellsFeeds[currentRow, currentColumn];
 
                 if (updateCell != null)
                 {
-                    updateCell.InputValue = rowValue.Value;//confirm the account name before writting????
+                    updateCell.InputValue = rowValue.Column3;//confirm the account name before writting????
                     updateCell.Update();
                 }
                 else
                 {
-                    CellEntry newCell = new CellEntry(currentRow, currentColumn, rowValue.Value);
+                    CellEntry newCell = new CellEntry(currentRow, currentColumn, rowValue.Column3);
                     allCellsFeeds.Insert(newCell);
                 }             
             }            
@@ -152,7 +178,6 @@ namespace IB_Reports.Helper
                         logger.WriteToLog(DateTime.Now, account.AccountName + ": GoogleSpreadSheetWriter.UpdateDailyProgress: not found this account name in \"xml report\" tab", "IB_Log");
                     }
                 }
-
 
                 if (account.Finished)
                 {
