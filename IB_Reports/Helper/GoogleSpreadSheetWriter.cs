@@ -24,21 +24,21 @@ namespace IB_Reports.Helper
                                        ConfigurationManager.AppSettings["accounts_password"]);
 
 
-            List<DbData> dailyChangeData = dbmanager.GetDailyData(accounts, "Changes");
-            tabName = ConfigurationManager.AppSettings["dailyChangeTab"];
-            startingRow = 0;
-            WriteRowsToGoogleSheet(dailyChangeData, service, fileName, tabName, startingRow);
+            //List<DbData> dailyChangeData = dbmanager.GetDailyData(accounts, "Changes");
+            //tabName = ConfigurationManager.AppSettings["dailyChangeTab"];
+            ///startingRow = 0;
+            //WriteRowsToGoogleSheet(dailyChangeData, service, fileName, tabName);
 
 
             List<DbData> performence = dbmanager.GetDailyData(accounts, "Performance");
             tabName = ConfigurationManager.AppSettings["performanceTab"];
-            startingRow = 1;
-            WriteRowsToGoogleSheet(performence, service, fileName, tabName, startingRow);
+            //startingRow = 1;
+            WriteRowsToGoogleSheet(performence, service, fileName, tabName);
 
 
         }
 
-        private static void WriteRowsToGoogleSheet(List<DbData> data, SpreadsheetsService service, string fileName, string tabName, int startingRow)
+        private static void WriteRowsToGoogleSheet(List<DbData> data, SpreadsheetsService service, string fileName, string tabName)
         {
             GoogleSpreadSheethalper helper = new GoogleSpreadSheethalper();
             FileLogWriter logger = new FileLogWriter();
@@ -53,21 +53,23 @@ namespace IB_Reports.Helper
 
             try
             {
-                for (int i = startingIndex - 1 ; i >= startingRow; i--)
+                for (int i = startingIndex - 1 ; i >= 0; i--)
                     listFeed.Entries[i].Delete();
             }
             catch (Exception e)
             {
                 logger.WriteToLog(DateTime.Now, "WriteDailyChanges.WriteRowsToGoogleSheet(): cant delete thith row google server rturnd an error: " + e.Message, ConfigurationManager.AppSettings["logFileName"]);
             }
-            
+
+            listFeed = helper.GetListFeeds(service, fileName, tabName);
+            allCellsFeeds = helper.GetCellFeeds(service, fileName, tabName);         
 
             string previousdate = data[0].Column1;  //column1 = date or acountName , column2 = accountName or column
             const uint headRow = 1;
-            uint currentRow= 1;
+            uint currentRow = 1;
             uint currentColumn = 2;
 
-            //update accounts names in the header row
+            //update the header row
             foreach (DbData rowValue in data)
             {
                 CellEntry updateCell;
@@ -78,11 +80,6 @@ namespace IB_Reports.Helper
                     updateCell.InputValue = rowValue.Column2;
                     updateCell.Update();
                     currentColumn++;
-
-                    if (allCellsFeeds.ColCount.Count < currentColumn)
-                    {
-                        //add column
-                    }
                 }
             }
 
@@ -113,7 +110,7 @@ namespace IB_Reports.Helper
                     {
                         //update existing  row
                         updateCell = allCellsFeeds[currentRow, currentColumn];
-                        updateCell.InputValue = rowValue.Column3;
+                        updateCell.InputValue = rowValue.Column1;
                         updateCell.Update();
                     }
                     
@@ -126,7 +123,7 @@ namespace IB_Reports.Helper
 
                 if (updateCell != null)
                 {
-                    updateCell.InputValue = rowValue.Column3;//confirm the account name before writting????
+                    updateCell.InputValue = rowValue.Column3;
                     updateCell.Update();
                 }
                 else
